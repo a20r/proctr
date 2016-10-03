@@ -2,34 +2,17 @@
 #ifndef ROUTE_HPP
 #define ROUTE_HPP
 
-template <typename T>
 class Route
 {
     public:
-        Route()
-        {
-        }
-
-        ~Route()
-        {
-        }
-
-        Route(T source, T sink) : source(source), sink(sink)
-        {
-        }
-
-        T get_source()
-        {
-            return source;
-        }
-
-        T get_sink()
-        {
-            return sink;
-        }
+        Route();
+        Route(int source, int sink);
+        ~Route();
+        int get_source();
+        int get_sink();
 
     private:
-        T source, sink;
+        int source, sink;
 };
 
 #endif
