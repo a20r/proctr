@@ -1,0 +1,22 @@
+cmake_minimum_required (VERSION 2.6)
+project (proctr CXX)
+
+# Definitions
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+add_definitions(-std=c++11 -Wall -Wextra -Ofast -march=native
+    -flto -fwhole-program -fopenmp)
+
+# Setting up Boost
+find_package(
+    Boost REQUIRED
+    COMPONENTS date_time)
+
+include_directories(${Boost_INCLUDE_DIRS} include)
+
+add_subdirectory(src)
+add_subdirectory(test)
+
+# Linking
+# link_directories(/usr/local/lib)
+# add_executable(correlate_timeseries correlate_timeseries.cpp)
+# target_link_libraries(correlate_timeseries ${Boost_LIBRARIES} cnpy)
