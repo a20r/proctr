@@ -1,1 +1,0 @@
-/usr/bin/c++       CMakeFiles/run_tests.dir/route_test.cpp.o CMakeFiles/run_tests.dir/run_tests.cpp.o  -o run_tests -rdynamic -lgtest -lpthread 
