@@ -14,3 +14,5 @@ class Correlations
         double *cors;
         int num_ts;
 }
+
+#endif
