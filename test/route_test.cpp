@@ -1,6 +1,9 @@
 
+#include <ostream>
 #include "gtest/gtest.h"
 #include "proctr/route.hpp"
+
+using namespace std;
 
 TEST(RouteTest, SourceAndSink)
 {
