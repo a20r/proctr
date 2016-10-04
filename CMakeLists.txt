@@ -18,8 +18,3 @@ include_directories(${Boost_INCLUDE_DIRS} include)
 
 add_subdirectory(src)
 add_subdirectory(test)
-
-# Linking
-# link_directories(/usr/local/lib)
-# add_executable(correlate_timeseries correlate_timeseries.cpp)
-# target_link_libraries(correlate_timeseries ${Boost_LIBRARIES} cnpy)
