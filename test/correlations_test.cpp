@@ -10,8 +10,7 @@ using namespace std;
 
 TEST(CorrelationsTest, LoadingCorrelations)
 {
-    double num_ts = 101;
-    size_t counter = 0;
+    size_t num_ts = 101, counter = 0;
     double tol = 0.001;
 
     cnpy::NpyArray arr = cnpy::npy_load("data/mean_cors.npy");
