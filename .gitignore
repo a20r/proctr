@@ -181,3 +181,4 @@ ENV/
 **CTestTestfile.cmake
 
 data/
+bin/
