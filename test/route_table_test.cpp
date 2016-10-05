@@ -57,35 +57,40 @@ TEST(RouteTableTest, LoadingRouteTable1D)
 TEST(RouteTableTest, NotEqualTable)
 {
     RouteTable<int> tab;
-    bool loaded = RouteTable<int>::load_npy("test/data/test_not_equal.npy", tab);
+    string fname = "test/data/test_not_equal.npy";
+    bool loaded = RouteTable<int>::load_npy(fname, tab);
     ASSERT_FALSE(loaded);
 }
 
 TEST(RouteTableTest, Not2DTable)
 {
     RouteTable<int> tab;
-    bool loaded = RouteTable<int>::load_npy("test/data/test_not_2d.npy", tab);
+    string fname = "test/data/test_not_2d.npy";
+    bool loaded = RouteTable<int>::load_npy(fname, tab);
     ASSERT_FALSE(loaded);
 }
 
 TEST(RouteTableTest, Not1DTable)
 {
     RouteTable<int, 1> tab;
-    bool loaded = RouteTable<int, 1>::load_npy("test/data/test_not_equal.npy", tab);
+    string fname = "test/data/test_not_equal.npy";
+    bool loaded = RouteTable<int, 1>::load_npy(fname, tab);
     ASSERT_FALSE(loaded);
 }
 
 TEST(RouteTableTest, LoadingNpy)
 {
     RouteTable<double> tab;
-    bool loaded = RouteTable<double>::load_npy("test/data/mean_cors.npy", tab);
+    string fname = "test/data/mean_cors.npy";
+    bool loaded = RouteTable<double>::load_npy(fname, tab);
     ASSERT_TRUE(loaded);
 }
 
 TEST(RouteTableTest, Loading2DNpy)
 {
     RouteTable<int, 1> tab;
-    bool loaded = RouteTable<int, 1>::load_npy("test/data/volume.npy", tab);
+    string fname = "test/data/volume.npy";
+    bool loaded = RouteTable<int, 1>::load_npy(fname, tab);
     ASSERT_TRUE(loaded);
 }
 
