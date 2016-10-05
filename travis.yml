@@ -1,9 +1,0 @@
-sudo: required
-language: cpp
-dist: trusty
-compiler: g++
-install:
-    - source install_deps.sh
-script:
-    - cmake -D CMAKE_CXX_COMPILER=g++-4.8 . && make
-    - bin/run_tests
