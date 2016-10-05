@@ -10,11 +10,11 @@ using namespace std;
 
 TEST(RouteTableTest, LoadingRouteTable2D)
 {
-    size_t num_ts = 101, counter = 0;
+    size_t num_ts = 20, counter = 0;
     double tol = 0.001;
-    cnpy::NpyArray arr = cnpy::npy_load("data/mean_cors.npy");
+    cnpy::NpyArray arr = cnpy::npy_load("test/data/mean_cors.npy");
     double *cors_data = reinterpret_cast<double *>(arr.data);
-    RouteTable<double> cors(cors_data, 101);
+    RouteTable<double> cors(cors_data, num_ts);
 
     for (size_t p0 = 0; p0 < num_ts; p0++)
     {
@@ -37,10 +37,10 @@ TEST(RouteTableTest, LoadingRouteTable2D)
 
 TEST(RouteTableTest, LoadingRouteTable1D)
 {
-    size_t num_ts = 101, counter = 0;
-    cnpy::NpyArray arr = cnpy::npy_load("data/volume.npy");
+    size_t num_ts = 20, counter = 0;
+    cnpy::NpyArray arr = cnpy::npy_load("test/data/volume.npy");
     int *vols_data = reinterpret_cast<int *>(arr.data);
-    RouteTable<int, 1> vols(vols_data, 101);
+    RouteTable<int, 1> vols(vols_data, num_ts);
 
     for (size_t p0 = 0; p0 < num_ts; p0++)
     {
@@ -57,56 +57,55 @@ TEST(RouteTableTest, LoadingRouteTable1D)
 TEST(RouteTableTest, NotEqualTable)
 {
     RouteTable<int> tab;
-    bool loaded = RouteTable<int>::load_npy("data/test_not_equal.npy", tab);
+    bool loaded = RouteTable<int>::load_npy("test/data/test_not_equal.npy", tab);
     ASSERT_FALSE(loaded);
 }
 
 TEST(RouteTableTest, Not2DTable)
 {
     RouteTable<int> tab;
-    bool loaded = RouteTable<int>::load_npy("data/test_not_2d.npy", tab);
+    bool loaded = RouteTable<int>::load_npy("test/data/test_not_2d.npy", tab);
     ASSERT_FALSE(loaded);
 }
 
 TEST(RouteTableTest, Not1DTable)
 {
     RouteTable<int, 1> tab;
-    bool loaded = RouteTable<int, 1>::load_npy("data/test_not_equal.npy", tab);
+    bool loaded = RouteTable<int, 1>::load_npy("test/data/test_not_equal.npy", tab);
     ASSERT_FALSE(loaded);
 }
 
 TEST(RouteTableTest, LoadingNpy)
 {
     RouteTable<double> tab;
-    bool loaded = RouteTable<double>::load_npy("data/mean_cors.npy", tab);
+    bool loaded = RouteTable<double>::load_npy("test/data/mean_cors.npy", tab);
     ASSERT_TRUE(loaded);
 }
 
 TEST(RouteTableTest, Loading2DNpy)
 {
     RouteTable<int, 1> tab;
-    bool loaded = RouteTable<int, 1>::load_npy("data/volume.npy", tab);
+    bool loaded = RouteTable<int, 1>::load_npy("test/data/volume.npy", tab);
     ASSERT_TRUE(loaded);
 }
 
 TEST(RouteTableTest, LoadingVolumesWithAlias)
 {
     Volumes vols;
-    bool loaded = Volumes::load_npy("data/volume.npy", vols);
+    bool loaded = Volumes::load_npy("test/data/volume.npy", vols);
     ASSERT_TRUE(loaded);
 }
-
 
 TEST(RouteTableTest, LoadingStdsWithAlias)
 {
     Stds stds;
-    bool loaded = Volumes::load_npy("data/stds.npy", stds);
+    bool loaded = Volumes::load_npy("test/data/stds.npy", stds);
     ASSERT_TRUE(loaded);
 }
 
 TEST(RouteTableTest, LoadingCorsWithAlias)
 {
     Correlations cors;
-    bool loaded = Correlations::load_npy("data/mean_cors.npy", cors);
+    bool loaded = Correlations::load_npy("test/data/mean_cors.npy", cors);
     ASSERT_TRUE(loaded);
 }

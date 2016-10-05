@@ -1,12 +1,12 @@
 
 language: cpp
 
-compiler: gcc
+compiler: g++
 
 sudo: required
 
 install:
-    - export CXX="g++4.8"
+    # - export CXX="g++4.8"
     - source install_deps.sh
 
 script:
