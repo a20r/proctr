@@ -15,6 +15,7 @@ add_definitions(-std=c++11 -Ofast -march=native
 #     COMPONENTS date_time)
 
 include_directories(${Boost_INCLUDE_DIRS} include)
+link_directories(/usr/local/lib)
 
 add_subdirectory(src)
 add_subdirectory(test)
