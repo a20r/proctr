@@ -61,17 +61,16 @@ class RouteTable
             throw std::runtime_error("Cannot call this getter with dim = 1");
         }
 
-        template<typename D>
-        static bool load_npy(string fname, RouteTable<D> &table)
+        template<typename D, size_t d = 2>
+        static bool load_npy(string fname, RouteTable<D, d> &table)
         {
             cnpy::NpyArray arr = cnpy::npy_load(fname);
-
-            if (arr.shape.size() != 4)
+            if (arr.shape.size() != 2 * d)
             {
                 return false;
             }
 
-            for (size_t i = 0; i < 3; i++)
+            for (size_t i = 0; i < 2 * d - 1; i++)
             {
                 if (arr.shape[i] != arr.shape[i + 1])
                 {
@@ -80,7 +79,7 @@ class RouteTable
             }
 
             D *data = reinterpret_cast<D *>(arr.data);
-            table = RouteTable<D>(data, arr.shape[0]);
+            table = RouteTable<D, d>(data, arr.shape[0]);
             return true;
         }
 
@@ -88,5 +87,9 @@ class RouteTable
         T *data;
         int num_ts;
 };
+
+using Volumes = RouteTable<int, 1>;
+using Stds = RouteTable<double, 2>;
+using Correlations = RouteTable<double, 2>;
 
 #endif

@@ -1,0 +1,7 @@
+
+install: source install_deps.sh
+
+script:
+    - cmake .
+    - make
+    - bin/run_tests
