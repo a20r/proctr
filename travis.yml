@@ -1,9 +1,10 @@
 
+language: cpp
+
 sudo: required
 
 install: source install_deps.sh
 
 script:
-    - cmake .
-    - make
+    - cmake . && make
     - bin/run_tests
