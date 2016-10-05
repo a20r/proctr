@@ -1,9 +1,11 @@
 
+sudo: required
+
 language: cpp
 
-compiler: g++
+dist: trusty
 
-sudo: required
+compiler: g++
 
 install:
     # - export CXX="g++4.8"
