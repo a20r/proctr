@@ -180,6 +180,7 @@ ENV/
 **install_manifest.txt
 **CTestTestfile.cmake
 
-data
+data/
+!test/data/
 bin/
 third_party/
