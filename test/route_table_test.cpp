@@ -4,18 +4,18 @@
 #include "gtest/gtest.h"
 #include "cnpy.h"
 #include "proctr/route.hpp"
-#include "proctr/correlations.hpp"
+#include "proctr/route_table.hpp"
 
 using namespace std;
 
-TEST(CorrelationsTest, LoadingCorrelations)
+TEST(RouteTableTest, LoadingRouteTable)
 {
     size_t num_ts = 101, counter = 0;
     double tol = 0.001;
 
     cnpy::NpyArray arr = cnpy::npy_load("data/mean_cors.npy");
     double *cors_data = reinterpret_cast<double *>(arr.data);
-    Correlations cors(cors_data, 101);
+    RouteTable<double> cors(cors_data, 101);
 
     for (size_t p0 = 0; p0 < num_ts; p0++)
     {
@@ -27,11 +27,32 @@ TEST(CorrelationsTest, LoadingCorrelations)
                 {
                     Route r0(p0, d0);
                     Route r1(p1, d1);
-                    double cor = cors.get_correlation(r0, r1);
+                    double cor = cors.get(r0, r1);
                     double actual = cors_data[counter++];
                     ASSERT_TRUE(abs(cor - actual) < tol);
                 }
             }
         }
     }
+}
+
+TEST(RouteTableTest, NotEqualTable)
+{
+    RouteTable<int> tab;
+    bool loaded = RouteTable<int>::load_npy("data/test_not_equal.npy", tab);
+    ASSERT_FALSE(loaded);
+}
+
+TEST(RouteTableTest, Not4DTable)
+{
+    RouteTable<int> tab;
+    bool loaded = RouteTable<int>::load_npy("data/test_not_4d.npy", tab);
+    ASSERT_FALSE(loaded);
+}
+
+TEST(RouteTableTest, LoadingNpy)
+{
+    RouteTable<double> tab;
+    bool loaded = RouteTable<double>::load_npy("data/mean_cors.npy", tab);
+    ASSERT_TRUE(loaded);
 }
