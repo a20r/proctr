@@ -1,6 +1,8 @@
 
 language: cpp
 
+compiler: gcc
+
 sudo: required
 
 install: source install_deps.sh
