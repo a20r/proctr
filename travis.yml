@@ -5,7 +5,9 @@ compiler: gcc
 
 sudo: required
 
-install: source install_deps.sh
+install:
+    - export CXX="g++4.8"
+    - source install_deps.sh
 
 script:
     - cmake . && make
