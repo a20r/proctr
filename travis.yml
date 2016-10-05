@@ -11,6 +11,5 @@ install:
     - source install_deps.sh
 
 script:
-    - export CXX="g++"
-    - cmake . && make
+    - cmake -D CMAKE_CXX_COMPILER=g++-4.8 . && make
     - bin/run_tests
