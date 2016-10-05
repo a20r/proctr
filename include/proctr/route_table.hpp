@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <initializer_list>
+#include <sys/stat.h>
 #include "cnpy.h"
 #include "proctr/route.hpp"
 
@@ -64,7 +65,13 @@ class RouteTable
         template<typename D, size_t d = 2>
         static bool load_npy(string fname, RouteTable<D, d> &table)
         {
+            struct stat buffer;
+            if (stat(fname.c_str(), &buffer)) {
+                return false;
+            }
+
             cnpy::NpyArray arr = cnpy::npy_load(fname);
+
             if (arr.shape.size() != 2 * d)
             {
                 return false;

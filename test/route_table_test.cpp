@@ -94,6 +94,14 @@ TEST(RouteTableTest, Loading2DNpy)
     ASSERT_TRUE(loaded);
 }
 
+TEST(RouteTableTest, LoadingDoesntExist)
+{
+    RouteTable<int, 1> tab;
+    string fname = "test/data/i-dont-exist.npy";
+    bool loaded = RouteTable<int, 1>::load_npy(fname, tab);
+    ASSERT_FALSE(loaded);
+}
+
 TEST(RouteTableTest, LoadingVolumesWithAlias)
 {
     Volumes vols;
