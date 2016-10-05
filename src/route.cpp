@@ -23,19 +23,14 @@ int Route::get_sink() const
     return sink;
 }
 
-bool Route::operator<(const Route &rhs)
+bool Route::operator<=(const Route &rhs)
 {
-    if (source >= rhs.get_source())
-    {
-        return false;
-    }
-
     if (source < rhs.get_source())
     {
         return true;
     }
 
-    if (source == rhs.get_source() and sink < rhs.get_sink())
+    if (source == rhs.get_source() and sink <= rhs.get_sink())
     {
         return true;
     }

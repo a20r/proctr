@@ -10,7 +10,7 @@ class Route
         ~Route();
         int get_source() const;
         int get_sink() const;
-        bool operator<(const Route &rhs);
+        bool operator<=(const Route &rhs);
         void next(int num_ts);
 
     private:

@@ -41,11 +41,12 @@ class Predictor
                 diff[it->first] = it->second - last[it->first];
             }
 
-            Route max_route(num_ts, num_ts);
-            for (Route r(0, 0); r < Route(num_ts, num_ts); r.next(num_ts))
+            Route max_route(num_ts - 1, num_ts - 1);
+            for (Route r(0, 0); r <= max_route; r.next(num_ts))
             {
-                for (Route s(0, 0); s < Route(num_ts, num_ts); s.next(num_ts))
+                for (Route s(0, 0); s <= max_route; s.next(num_ts))
                 {
+                    cors.get(r, s);
                 }
             }
         }
