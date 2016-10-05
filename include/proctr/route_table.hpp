@@ -27,6 +27,11 @@ class RouteTable
         {
         }
 
+        size_t get_num_ts()
+        {
+            return num_ts;
+        }
+
         inline size_t get_index(Route routes[dim])
         {
             size_t index = 0;

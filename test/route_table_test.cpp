@@ -38,7 +38,7 @@ TEST(RouteTableTest, LoadingRouteTable2D)
 TEST(RouteTableTest, LoadingRouteTable1D)
 {
     size_t num_ts = 20, counter = 0;
-    cnpy::NpyArray arr = cnpy::npy_load("test/data/volume.npy");
+    cnpy::NpyArray arr = cnpy::npy_load("test/data/volumes.npy");
     int *vols_data = reinterpret_cast<int *>(arr.data);
     RouteTable<int, 1> vols(vols_data, num_ts);
 
@@ -89,7 +89,7 @@ TEST(RouteTableTest, LoadingNpy)
 TEST(RouteTableTest, Loading2DNpy)
 {
     RouteTable<int, 1> tab;
-    string fname = "test/data/volume.npy";
+    string fname = "test/data/volumes.npy";
     bool loaded = RouteTable<int, 1>::load_npy(fname, tab);
     ASSERT_TRUE(loaded);
 }
@@ -105,7 +105,7 @@ TEST(RouteTableTest, LoadingDoesntExist)
 TEST(RouteTableTest, LoadingVolumesWithAlias)
 {
     Volumes vols;
-    bool loaded = Volumes::load_npy("test/data/volume.npy", vols);
+    bool loaded = Volumes::load_npy("test/data/volumes.npy", vols);
     ASSERT_TRUE(loaded);
 }
 

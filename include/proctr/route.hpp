@@ -8,8 +8,10 @@ class Route
         Route();
         Route(int source, int sink);
         ~Route();
-        int get_source();
-        int get_sink();
+        int get_source() const;
+        int get_sink() const;
+        bool operator<(const Route &rhs);
+        void next(int num_ts);
 
     private:
         int source, sink;
