@@ -8,9 +8,9 @@ dist: trusty
 compiler: g++
 
 install:
-    # - export CXX="g++4.8"
     - source install_deps.sh
 
 script:
+    - export CXX="g++"
     - cmake . && make
     - bin/run_tests
