@@ -12,7 +12,8 @@ using namespace std;
 template<size_t num_ts>
 class Predictor
 {
-    using route_map = unordered_map<Route, int, RouteHash<num_ts>>;
+    template <typename T>
+    using route_map = unordered_map<Route, T, RouteHash<num_ts>>;
 
     public:
         Predictor()
@@ -33,29 +34,36 @@ class Predictor
         *
         * This function maintains state. Beware!
         */
-        void predict(route_map &demands, route_map &preds)
+        void predict(route_map<int> &demands, route_map<int> &preds)
         {
-            route_map diff;
+            route_map<int> diffs;
             for (auto it : demands)
             {
-                diff[it->first] = it->second - last[it->first];
+                diffs[it->first] = it->second - last[it->first];
             }
 
             Route max_route(num_ts - 1, num_ts - 1);
-            for (Route r(0, 0); r <= max_route; r.next(num_ts))
+            for (auto it : diffs)
             {
+                Route r = it->first;
+                int diff = it->second;
+                double vol_perc = (double) diff / (double) vols.get(r);
+
                 for (Route s(0, 0); s <= max_route; s.next(num_ts))
                 {
-                    cors.get(r, s);
+                    double cor = cors.get(r, s);
+                    double s_pred_vols = vols.get(s) * vol_perc * cor;
                 }
             }
+
+            last = demands;
         }
 
     private:
         Correlations cors;
         Volumes vols;
         Stds stds;
-        route_map last;
+        route_map<int> last;
 };
 
 #endif
