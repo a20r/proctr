@@ -10,9 +10,9 @@ add_definitions(-std=c++11 -Ofast -march=native
     -flto -fwhole-program -fopenmp)
 
 # Setting up Boost
-# find_package(
-#     Boost REQUIRED
-#     COMPONENTS date_time)
+find_package(
+    Boost REQUIRED
+    COMPONENTS date_time)
 
 include_directories(${Boost_INCLUDE_DIRS} include)
 link_directories(/usr/local/lib /home/wallar/software/gurobi652/linux64/lib)

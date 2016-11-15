@@ -1,0 +1,250 @@
+\documentclass[letterpaper, 10pt, conference]{ieeeconf}
+
+
+\IEEEoverridecommandlockouts
+\overrideIEEEmargins
+
+\let\proof\relax
+\let\endproof\relax
+
+\usepackage{amsmath, amssymb}
+\usepackage{url}
+\usepackage[pdftex]{graphicx}
+\usepackage{float}
+\usepackage{relsize}
+\usepackage{algorithm}
+\usepackage{fancyvrb}
+\usepackage[noend]{algorithmic}
+\usepackage{subfiles}
+\usepackage{titlecaps}
+\usepackage{fancyhdr}
+\usepackage{amsthm}
+
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+\newcommand{\tab}[1]{\hspace{.2\textwidth}\rlap{#1}}
+\newcommand{\itab}[1]{\hspace{0em}\rlap{#1}}
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\newcommand{\Acronym}[1]{\ensuremath{{{\texttt{#1}}}}}
+\newcommand{\Symbol}[1]{\ensuremath{\mathcal{#1}}}
+\newcommand{\Function}[1]{\ensuremath{{\textsc{#1}}}}
+\newcommand{\Area}[0]{\ensuremath{{\textsc{Area}}}}
+\newcommand{\Constant}[1]{\ensuremath{{\texttt{#1}}}}
+\newcommand{\Var}[1]{\ensuremath{{{\textsl{#1}}}}}
+\newcommand{\rB}[0]{\ensuremath{{{\mathcal{B'}}}}}
+\newcommand{\B}[0]{\ensuremath{{{\mathcal{B}}}}}
+\newcommand{\False}{\Constant{false}}
+\newcommand{\True}{\Constant{true}}
+\newcommand{\Null}{\Constant{null}}
+\newcommand{\dif}{\ensuremath{{\mathrm{d}}}}
+\newcommand{\where}{\ensuremath{{\textbf{ where }}}}
+\newcommand{\Name}{\Acronym{Dodger}}
+\newcommand{\Revision}[1]{\textcolor{red}{#1}}
+\newcommand{\R}{\ensuremath{\mathbb{R}}}
+\newcommand{\Traj}{\ensuremath{\zeta}}
+\newcommand{\Tree}{\Symbol{T}}
+\newcommand{\pair}[1]{\ensuremath{\langle#1\rangle}}
+\newcommand{\argmin}[1]{\underset{#1}{\operatorname{arg}\,\operatorname{min}}\;}
+\newcommand{\argmax}[1]{\underset{#1}{\operatorname{arg}\,\operatorname{max}}\;}
+\newcommand{\Max}[1]{\underset{#1}{\operatorname{max}}\;}
+\newcommand{\mychange}[1]{\textcolor{red}{#1}}
+\newcommand{\Sum}[1]{\displaystyle\sum\limits_{#1}}
+\newcommand{\Int}[1]{\displaystyle\int\limits_{#1}}
+\newcommand{\bx}[0]{\ensuremath{\mathbf{x}}}
+\newcommand{\by}[0]{\ensuremath{\mathbf{y}}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{definition}{Definition}
+
+\begin{document}
+
+\title{Vehicle Rebalancing for Ridesharing Enabled Mobility On Demand Systems}
+
+\author{Alex Wallar}
+
+\maketitle
+
+% \begin{abstract}
+%
+% \end{abstract}
+
+\section{Introduction}
+
+Enabling ridesharing for mobility on demand (MOD) systems requires passengers
+to specify a maximum waiting time, the maximum amount of time they are willing
+to wait for a vehicle to pick them up. This constraint allows us to develop
+shareability networks which in turn helps us to decide which passengers can be
+shared with which rides. The unfortunate consequence of this approach is that
+it can leave vehicles underutilized and passengers without rides. This
+fundamental issue can be addressed by intelligently rebalancing vehicles in the
+road network to ensure that the maximum amount of rides can be serviced.  Our
+approach will have two stages. Firstly, vehicles which have already accepted
+passengers will be routed through areas that have a high probability of
+requests that could also be shared with the current passenger demands whilst
+keeping the path within the time constraints given by the passengers.  We will
+call this \emph{active rebalancing}. Secondly, any vehicles that cannot be
+assigned to passengers will move to regions that have a high probability of any
+request without overburdening the congestion limits of the road network. We
+will call this \emph{passive rebalancing}. These two problems are solved in
+sequence by first actively rebalancing the currently occupied vehicles, and
+then using the routes they have chosen to perform passive rebalancing. Both
+rebalancing schemes are formulated as constrained optimization problems with
+integer constraints. Particularly, active and passive rebalancing are
+formulated as a mixed integer linear program (MILP) and a mixed integer
+quadratically constrained program (MIQCP).
+
+In order to perform active and passive rebalancing, we need to be able to infer
+the time varying rate at which a particular route is being requested and the
+rate a certain region is producing requests. We use a particle filter to
+estimate these rates in real-time and use historical taxi request data to learn
+a time varying multimodal prior distribution to aid in inferring noisy rates.
+
+\section{Problem Formulation}
+
+The road network for the MOD system is modelled as a directed graph denoted by
+$\mathcal{G} = (\mathcal{N}, \mathcal{E})$ where $\mathcal{N} = \{n_0, \ldots,
+n_{N_n}\} \subset \mathbb{R}^2$ is the set of nodes and $\mathcal{E} = \{e_0,
+\ldots, e_{N_e}\}$ is the set of directed edges represented as ordered pairs,
+$\forall i,\, e_i \in \mathcal{N}^2$. Let the set of incoming requests for
+rides at time $t$ be denoted as $\mathcal{R}_{t} \subseteq \mathcal{E}$ and let
+$\Pi(\mathcal{R}_t) = \{\pi_0, \ldots, \pi_{N_v}\}$ be the set of optimal paths
+given to each vehicle to satisfy $\mathcal{R}_t$ given by the ridsharing
+algorithm in \cite{alonsomora16pnas}. Each $\pi_i \in \Pi(\mathcal{R}_t)$
+denotes the path vehicle $i$ would be assigned to contribute to satisfying the
+requests in $\mathcal{R}_t$ with $\pi_i \in 2^{\mathcal{N}}$ and $(\pi^k_i,
+\pi^{k + 1}_i) \in \mathcal{E}$. Note that $\pi_i$ may be the empty set. Let
+$||\pi_i||$ represent the total travel time of the path.
+
+\subsection{Estimating Request Rates}
+
+The operating area for the MOD system is partitioned into $N_{k}$ regions
+denoted as $\mathcal{K} = \{k_0, \ldots, k_{N_k}\}$. A \emph{route} is defined
+as origin-destination pair represented as an ordered pair, $\rho \in
+\mathcal{K}^2$. Rides are assumed to be requested according to an inhomogeneous
+Poisson point process with a stochastic time-varying rate, $\hat{\lambda}(t)$.
+These rates are assumed to drift over time in a short horizon according to a
+Wiener process.  This means $\hat\lambda(t') - \hat\lambda(t)
+\sim \mathfrak{N}(0, \sigma^2 \cdot (t' - t))$, where $\mathfrak{N}$ is a
+normal distribution and $\sigma^2$ represents the volatility of the process. We
+also assume we have access to historical taxi request data in order to build a
+prior distribution.  We seek to determine the rate that different routes are
+being requested and the rate that regions are producing requests in the
+presence of noise and uncertainty.
+
+\subsection{Active Rebalancing}
+
+As with the work in \cite{alonsomora16pnas} we assume the there is a maximum
+acceptable time a potential passenger will spend waiting before being picked up
+denoted as $w$. Now for each vehicle, $v$, we seek to find a Pareto optimal
+path, $\pi_v$, that minimizes the added travel time, $||\pi_v|| - ||\pi_v^*||$,
+and maximizes the added probability of filling the vehicle to capacity, where
+$\pi_v^* \in \Pi(\mathcal{R}_t)$ is the original optimal path for the vehicle.
+
+\subsection{Passive Rebalancing}
+
+For passive rebalancing, we seek to direct cars to regions where they have a
+high probability of filling to capacity in the minimum amount of time. This
+means we are searching for an assignment of vehicles to regions such that the
+expected time it would take to fill to capacity is minimized. This expected
+time also includes the time it takes the vehicle to move from its current
+location to the assigned region. We would also to ensure that the vehicle
+assignment also takes into account vehicles already assigned to the regions and
+candidate assignments during the search process since all vehicles in the same
+region are competing for prospective requests. Lastly, we want a vehicle
+assignment does not over populate the road network in certain areas (i.e.\ all
+vehicles being assigned to a very fruitful region), in order to mitigate
+possible self inflicted congestion which could in turn reduce the quality of
+the MOD system.
+
+\section{Approach}
+
+\subsection{Passive Rebalancing}
+
+We seek to find an assignment of vehicles to routes that minimizes the maximum
+expected time it would take to fill any vehicle to capacity. This includes the
+time it takes the vehicle to move to the origin of the route and the expected
+time the vehicle would need to stay in the region to fill to capacity.  This
+assignment should also be valid for vehicles that are already carrying
+passengers. This means the destination of passengers needs to be taken into
+consideration. Finally, in order to avoid self inflicted congestion, this
+assignment should not overburden regions of the road network.  We have
+formulated this problem as a mixed integer quadratically constrained problem
+(MIQCP) which finds the optimal assignment of vehicles to routes and the
+expected amount of time a set of vehicles would need to stay in an origin
+region to all fill to capacity.
+
+Let $V = \{1, \ldots, N_v\}$, $R = \{1, \ldots, N_r\}$, and $O = \{1, \ldots,
+N_o\}$, be the set of vehicles, routes, and origins respectively. Let $A \in
+\{0, 1\}^{N_v \times N_r}$ be a binary matrix such that if $A_{vr} = 1$, then
+vehicle $v$ can satisfy route $r$. This can be computed using the shareability
+graph.  Let $C_{vr} \in \mathbb{R}^{N_v \times N_r}$ be a cost matrix where
+$C_{vr}$ represents the cost of vehicle $v$ satisfying route $r$. For our
+examples we use the distance from $v$ to the origin of $r$. Let $\Lambda$ of
+size $N_r$ be the set of expected request rate for all the routes. More
+specifically, $\Lambda_r = \mathbb{E}(\hat{\lambda_r})$ where $\hat{\lambda_r}$
+is the estimated rate of requests at the current time. Also let $\Omega$ of
+size $N_\omega$ be a set such that $\Omega_\omega$ is the set of requests with
+origin $\omega$ and let $K_{\omega}$ be the remaining number of vehicles we can
+allow into region $\omega$. The equations below show the MIQCP formulation.
+
+\begin{equation*}
+\begin{array}{lll}
+\argmin{x_{vr}, \,T_r}  & \theta &\\
+% \argmin{x_{vr}, \,T_r}  & \Max{v \in V, r \in R} A_{vr} \cdot x_{vr} \cdot (T_r + C_{vr})&\\
+\text{subject to}
+    & x_{vr} \cdot (T_r + C_{vr}) \leq \theta,
+    & \forall v, r \in V \times R\\
+    & \Sum{v \in V} x_{vr} \cdot \xi_v \leq \Lambda_r \cdot T_r,
+    & \forall r \in R \\
+    & \Sum{r \in R} A_{vr} \cdot x_{vr} = 1,  &\forall v \in V \\
+    & \Sum{v \in V} \Sum{r \in \Omega_{\omega}} x_{vr} \leq K_{\omega},  &\forall \omega \in O\\
+    & x_{vr} \in \{0,1\} & \forall v, r \in V \times R\\
+    & T_{r} \in [1, T_{\max}] & \forall r \in R \\
+\end{array}
+\end{equation*}
+
+\subsection{Active Rebalancing}
+
+\begin{equation*}
+\begin{array}{lll}
+\argmax{\bx, \, \by}  & \Sum{v \in \mathcal{V}}
+    \Sum{\pi \in \Pi_v} \bx_{v\pi} \cdot
+    \Sum{r \in \mathcal{R}(\pi)}
+    \frac{1 - e^{-\bar{\lambda}_r(T_{\pi r})}}
+    {1 + \Sum{\pi' \in \Pi} \by_{\pi'} \frac{\tau(T_{\pi r} \cap T_{\pi' r})}
+    {\tau(T_{\pi r})}}& \\
+\text{subject to}
+    & \Sum{\pi \in \Pi_v} \bx_{v\pi} = 1, \, \forall v \in \mathcal{V} \\
+    & \Sum{\pi \in \Pi} \by_{\pi} = N_v \\
+    & \bx \in \{0, 1\} ^ {N_v \times N_\pi} \\
+    & \by \in \{0, 1\} ^ {N_\pi} \\
+
+\end{array}
+\end{equation*}
+
+\begin{equation*}
+\begin{array}{lll}
+\argmax{\bx, \, \by}  & \Sum{v \in \mathcal{V}}
+    \Sum{\pi \in \Pi_v} \bx_{v\pi} \cdot
+    \Sum{r \in \mathcal{R}(\pi)} \,
+    \Int{T_{\pi r}}
+    \frac{t \cdot \bar{\lambda}_r(t)}
+    {1 + \sum\limits_{\pi' \in \Pi} \by_{\pi'} \cdot \ell(\pi'(t))} \text{d}t& \\
+\text{subject to}
+    & \Sum{\pi \in \Pi_v} \bx_{v\pi} = 1, \, \forall v \in \mathcal{V} \\
+    & \Sum{\pi \in \Pi} \by_{\pi} = N_v \\
+    & \bx \in \{0, 1\} ^ {N_v \times N_\pi} \\
+    & \by \in \{0, 1\} ^ {N_\pi} \\
+
+\end{array}
+\end{equation*}
+
+\bibliographystyle{IEEEtran}
+
+\bibliography{bib}
+
+\end{document}
