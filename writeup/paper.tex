@@ -239,9 +239,20 @@ allow into region $\omega$. The equations below show the MIQCP formulation.
     & \Sum{\pi \in \Pi} \by_{\pi} = N_v \\
     & \bx \in \{0, 1\} ^ {N_v \times N_\pi} \\
     & \by \in \{0, 1\} ^ {N_\pi} \\
-
 \end{array}
 \end{equation*}
+
+\begin{equation*}
+\begin{array}{lll}
+\argmin{x_\pi}  & \Sum{r = 1}^{N_{\mathcal{R}}}
+    \Sum{i = 1}^{N^r_A} (t^r_{i + 1} - t^r_i) \lambda^r_i a^r_i & \\
+\text{subject to}
+    & \Sum{\pi \in \Pi^r_i} x_{\pi} = a^r_i, \, \forall r \in \mathcal{R} \\
+    & \Sum{\pi \in \Pi_v} x_{\pi} = 1, \, \forall v \in \mathcal{V} \\
+    & x_\pi \in \{0, 1\}, \, \forall \pi \in \Pi
+\end{array}
+\end{equation*}
+
 
 \bibliographystyle{IEEEtran}
 
