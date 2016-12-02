@@ -7,7 +7,7 @@ Prior::Prior()
 
 Prior::~Prior()
 {
-    delete[] kdes;
+    // delete[] kdes;
 }
 
 int Prior::total_seconds(tm time)

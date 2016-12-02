@@ -245,7 +245,7 @@ allow into region $\omega$. The equations below show the MIQCP formulation.
 \begin{equation*}
 \begin{array}{lll}
 \argmin{x_\pi}  & \Sum{r = 1}^{N_{\mathcal{R}}}
-    \Sum{i = 1}^{N^r_A} (t^r_{i + 1} - t^r_i) \lambda^r_i a^r_i & \\
+    \Sum{i = 1}^{N^r_A} (t^r_{i + 1} - t^r_i) \mathbb{E}({\lambda}^r_i) a^r_i & \\
 \text{subject to}
     & \Sum{\pi \in \Pi^r_i} x_{\pi} = a^r_i, \, \forall r \in \mathcal{R} \\
     & \Sum{\pi \in \Pi_v} x_{\pi} = 1, \, \forall v \in \mathcal{V} \\
