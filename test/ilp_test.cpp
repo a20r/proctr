@@ -74,41 +74,41 @@ TEST(ILPTest, InitialTest)
     }
 }
 
-TEST(ILPTest, ActiveTest)
-{
-    GRBEnv *env = new GRBEnv;
-    vector<vector<double>> times;
-    vector<vector<double>> rates;
-
-    for (int i = 0; i < 10; i++)
-    {
-        vector<double> sub_times;
-        vector<double> sub_rates;
-        sub_times.push_back(0);
-
-        for (int j = 0; j < 20; j++)
-        {
-            sub_times.push_back(j + 1);
-            sub_rates.push_back(0.1);
-        }
-
-        times.push_back(sub_times);
-        rates.push_back(sub_rates);
-    }
-
-    vec2<int> max_vecs, vehicle_to_paths;
-    vec3<int> paths_in_region;
-    int num_paths = 10;
-
-    try
-    {
-        ActiveRebalancingModel model = create_model(
-                env, times, rates,
-                max_vecs, paths_in_region,
-                vehicle_to_paths, num_paths);
-    }
-    catch (GRBException e)
-    {
-        cout << "Error: " << e.getErrorCode() << endl;
-    }
-}
+// TEST(ILPTest, ActiveTest)
+// {
+//     GRBEnv *env = new GRBEnv;
+//     vector<vector<double>> times;
+//     vector<vector<double>> rates;
+//
+//     for (int i = 0; i < 10; i++)
+//     {
+//         vector<double> sub_times;
+//         vector<double> sub_rates;
+//         sub_times.push_back(0);
+//
+//         for (int j = 0; j < 20; j++)
+//         {
+//             sub_times.push_back(j + 1);
+//             sub_rates.push_back(0.1);
+//         }
+//
+//         times.push_back(sub_times);
+//         rates.push_back(sub_rates);
+//     }
+//
+//     vec2<int> max_vecs, vehicle_to_paths;
+//     vec3<int> paths_in_region;
+//     int num_paths = 10;
+//
+//     try
+//     {
+//         ActiveRebalancingModel model = create_model(
+//                 env, times, rates,
+//                 max_vecs, paths_in_region,
+//                 vehicle_to_paths, num_paths);
+//     }
+//     catch (GRBException e)
+//     {
+//         cout << "Error: " << e.getErrorCode() << endl;
+//     }
+// }

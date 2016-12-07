@@ -1,3 +1,5 @@
+#ifndef ACTIVE_REBALANCING_HPP
+#define ACTIVE_REBALANCING_HPP
 
 #include <vector>
 #include "gurobi_c++.h"
@@ -31,3 +33,5 @@ ActiveRebalancingModel create_model(
         vec3<int>& paths_in_region,
         vec2<int>& vehicle_to_paths,
         int num_paths);
+
+#endif
