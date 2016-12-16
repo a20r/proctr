@@ -15,9 +15,9 @@ class Prior
     public:
         Prior();
         ~Prior();
-        int total_seconds(tm time);
-        double pdf(tm time, double rate);
-        void add_data(tm time, double rate);
+        int total_seconds(ptime time);
+        double pdf(ptime time, double rate);
+        void add_data(ptime time, double rate);
 };
 
 #endif
