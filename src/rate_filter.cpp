@@ -30,7 +30,7 @@ RateFilter::~RateFilter()
     delete prior;
 }
 
-void RateFilter::observe(int n_obs, double secs, tm time)
+void RateFilter::observe(int n_obs, double secs, ptime time)
 {
     resample();
 

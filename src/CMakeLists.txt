@@ -3,4 +3,4 @@ project (proctr CXX)
 
 file(GLOB SRC_FILES *.cpp)
 add_library(proctr STATIC ${SRC_FILES})
-target_link_libraries(proctr pthread gurobi_c++ gurobi65)
+target_link_libraries(proctr pthread gurobi_c++ $ENV{GUROBI_LIB_NAME})

@@ -14,8 +14,8 @@ find_package(
     Boost REQUIRED
     COMPONENTS date_time filesystem system)
 
-include_directories(${Boost_INCLUDE_DIRS} include)
-link_directories(/usr/local/lib /home/wallar/software/gurobi652/linux64/lib)
+include_directories(${Boost_INCLUDE_DIRS} include $ENV{GUROBI_HOME}/include)
+link_directories(/usr/local/lib $ENV{GUROBI_HOME}/lib)
 
 add_subdirectory(src)
 add_subdirectory(test)

@@ -169,7 +169,7 @@ vector<ptime> parse_ts_file(int p_st, int d_st)
 void create_prior(vector<ptime>& times, Prior& prior)
 {
     time_duration window_size = minutes(30);
-    int start_index = 0
+    int start_index = 0;
 
     for (int i = 1; i < times.size(); i++)
     {
@@ -180,14 +180,14 @@ void create_prior(vector<ptime>& times, Prior& prior)
         }
 
         time_duration elapsed_time = cur_t - times[start_index];
-        double rate = (i - start_time_index) / elapsed_time.total_seconds();
+        double rate = (i - start_index) / elapsed_time.total_seconds();
         prior.add_data(cur_t, rate);
     }
 }
 
 Prior **create_priors(int n_stations)
 {
-    Prior **priors = new int *[n_stations];
+    Prior **priors = new Prior *[n_stations];
     for (int i = 0; i < n_stations; i++)
     {
         priors[i] = new Prior[n_stations];

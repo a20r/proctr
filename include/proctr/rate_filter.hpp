@@ -23,7 +23,7 @@ class RateFilter
         RateFilter(double max_rate, int n_rates, double vol,
                 double resample_thresh, Prior *prior);
         ~RateFilter();
-        void observe(int n_obs, double secs, tm time);
+        void observe(int n_obs, double secs, ptime time);
         double get_probability(int i);
         double get_rate(int i);
         void normalize();

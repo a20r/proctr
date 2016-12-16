@@ -18,12 +18,14 @@ int Prior::total_seconds(ptime time)
 
 double Prior::pdf(ptime time, double rate)
 {
+    tm t = to_tm(time);
     double t_secs = total_seconds(time);
-    return kdes[time.tm_wday].pdf(t_secs, rate);
+    return kdes[t.tm_wday].pdf(t_secs, rate);
 }
 
 void Prior::add_data(ptime time, double rate)
 {
+    tm t = to_tm(time);
     double t_secs = total_seconds(time);
-    kdes[time.tm_wday].add_data(t_secs, rate);
+    kdes[t.tm_wday].add_data(t_secs, rate);
 }
