@@ -2,6 +2,7 @@
 #define PROCTR_DATA_READER_HPP
 
 #include <nanoflann.hpp>
+#include "proctr/prior.hpp"
 
 using namespace nanoflann;
 
@@ -59,6 +60,9 @@ typedef KDTreeSingleIndexAdaptor<
     GeoPoints, 2> kd_tree_t;
 
 void create_ts_files(kd_tree_t &index);
+void create_prior(vector<ptime>& times, Prior& prior);
+Prior **create_priors(int n_stations);
 GeoPoints load_stations();
+vector<ptime> parse_ts_file(int p_st, int d_st);
 
 #endif

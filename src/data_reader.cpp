@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 #include <nanoflann.hpp>
 #include <boost/progress.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -163,25 +164,28 @@ vector<ptime> parse_ts_file(int p_st, int d_st)
         dts.push_back(pt);
     }
 
+    sort(dts.begin(), dts.end());
     return dts;
 }
 
 void create_prior(vector<ptime>& times, Prior& prior)
 {
     time_duration window_size = minutes(30);
-    int start_index = 0;
+    int start = 0;
 
     for (int i = 1; i < times.size(); i++)
     {
         ptime cur_t = times[i];
-        while (cur_t - times[start_index] >= window_size && start_index < i)
+        while (cur_t - times[start] > window_size && start < i - 1)
         {
-            start_index++;
+            start++;
         }
-
-        time_duration elapsed_time = cur_t - times[start_index];
-        double rate = (i - start_index) / elapsed_time.total_seconds();
-        prior.add_data(cur_t, rate);
+        time_duration elapsed = cur_t - times[start];
+        if (elapsed.total_seconds() > 0)
+        {
+            double rate = (i - start) / (double) elapsed.total_seconds();
+            prior.add_data(cur_t, rate);
+        }
     }
 }
 
@@ -193,6 +197,9 @@ Prior **create_priors(int n_stations)
         priors[i] = new Prior[n_stations];
     }
 
+    boost::progress_display show_progress(n_stations);
+
+    #pragma omp parallel for
     for (int i = 0; i < n_stations; i++)
     {
         for (int j = 0; j < n_stations; j++)
@@ -200,6 +207,7 @@ Prior **create_priors(int n_stations)
             vector<ptime> times = parse_ts_file(i, j);
             create_prior(times, priors[i][j]);
         }
+        ++show_progress;
     }
 
     return priors;

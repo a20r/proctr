@@ -17,7 +17,9 @@ class Prior
         ~Prior();
         int total_seconds(ptime time);
         double pdf(ptime time, double rate);
+        double pdf(int day, time_duration time, double rate);
         void add_data(ptime time, double rate);
+        vector<double> rates;
 };
 
 #endif
