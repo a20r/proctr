@@ -26,7 +26,7 @@ TEST(PriorTest, CreatePriorsTest)
 TEST(PriorTest, DetermineRatesTest)
 {
     Prior prior;
-    vector<ptime> times = parse_ts_file(42, 42);
+    vector<ptime> times = parse_ts_file(42, 21);
     create_prior(times, prior);
 
     time_duration dt = minutes(10);

@@ -2,6 +2,7 @@
 #define PROCTR_DATA_READER_HPP
 
 #include <nanoflann.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "proctr/prior.hpp"
 
 using namespace nanoflann;
@@ -12,7 +13,14 @@ class GeoPoint
 {
     public:
         double  lng, lat;
-        GeoPoint(double lng, double lat) : lng(lng), lat(lat) {}
+
+        GeoPoint(double lng, double lat) : lng(lng), lat(lat)
+        {
+        }
+
+        GeoPoint()
+        {
+        }
 };
 
 class GeoPoints
@@ -52,7 +60,33 @@ class GeoPoints
         }
 
         template <class BBOX>
-        bool kdtree_get_bbox(BBOX& /* bb */) const { return false; }
+        bool kdtree_get_bbox(BBOX&) const
+        {
+            return false;
+        }
+};
+
+class PickupEvent
+{
+    public:
+        GeoPoint pickup, dropoff;
+        ptime pickup_time, dropoff_time;
+
+        PickupEvent()
+        {
+        }
+
+        PickupEvent(GeoPoint pickup, GeoPoint dropoff,
+                ptime pickup_time, ptime dropoff_time) :
+            pickup(pickup), dropoff(dropoff),
+            pickup_time(pickup_time), dropoff_time(dropoff_time)
+        {
+        }
+
+        bool operator<(const PickupEvent& other) const
+        {
+            return pickup_time < other.pickup_time;
+        }
 };
 
 typedef KDTreeSingleIndexAdaptor<
@@ -64,5 +98,6 @@ void create_prior(vector<ptime>& times, Prior& prior);
 Prior **create_priors(int n_stations);
 GeoPoints load_stations();
 vector<ptime> parse_ts_file(int p_st, int d_st);
+vector<PickupEvent> parse_historical_data(string fname, int rows)
 
 #endif

@@ -51,6 +51,39 @@ bool parse_data_line(string line, string &p_dt, string &d_dt,
     return !(p_lng == 0 or p_lat == 0 or d_lng == 0 or d_lat == 0);
 }
 
+bool parse_data_line(string line, PickupEvent &pevent)
+{
+    string p_dt, d_dt;
+    double p_lng, p_lat, d_lng, d_lat;
+    if (parse_data_line(line, p_dt, d_dt, p_lng, p_lat, d_lng, d_lat))
+    {
+        pevent = PickupEvent(GeoPoint(p_lng, p_lat), GeoPoint(d_lng, d_lat),
+            time_from_string(p_dt), time_from_string(d_dt));
+        return true;
+    }
+
+    return false;
+}
+
+vector<PickupEvent> parse_historical_data(string fname, int rows)
+{
+    ifstream file(fname);
+    string line;
+    vector<PickupEvent> events;
+
+    for (int i = 0; i < rows && getline(file, line); i++)
+    {
+        PickupEvent pevent;
+        if (parse_data_line(line, pevent))
+        {
+            events.push_back(pevent);
+        }
+    }
+
+    sort(events.begin(), events.end());
+    return events;
+}
+
 bool parse_stations_line(string line, double &lng, double &lat)
 {
     stringstream line_stream(line);

@@ -55,7 +55,6 @@ RebalancingModel create_model(
         double max_region_time,
         int Nv, int Nr)
 {
-
     GRBVar **vs = new GRBVar *[Nv];
     for (int i = 0; i < Nv; i++)
     {
