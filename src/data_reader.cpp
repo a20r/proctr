@@ -51,21 +51,32 @@ bool parse_data_line(string line, string &p_dt, string &d_dt,
     return !(p_lng == 0 or p_lat == 0 or d_lng == 0 or d_lat == 0);
 }
 
-bool parse_data_line(string line, PickupEvent &pevent)
+bool parse_data_line(string line, kd_tree_t &index, PickupEvent &pevent)
 {
     string p_dt, d_dt;
     double p_lng, p_lat, d_lng, d_lat;
     if (parse_data_line(line, p_dt, d_dt, p_lng, p_lat, d_lng, d_lat))
     {
+        size_t p_st = get_nearest(index, p_lng, p_lat);
+        size_t d_st = get_nearest(index, d_lng, d_lat);
         pevent = PickupEvent(GeoPoint(p_lng, p_lat), GeoPoint(d_lng, d_lat),
-            time_from_string(p_dt), time_from_string(d_dt));
+                p_st, d_st, time_from_string(p_dt), time_from_string(d_dt));
         return true;
     }
 
     return false;
 }
 
-vector<PickupEvent> parse_historical_data(string fname, int rows)
+kd_tree_t create_stations_kd_tree()
+{
+    GeoPoints gps = load_stations();
+    kd_tree_t index(2, gps, KDTreeSingleIndexAdaptorParams(1));
+    index.buildIndex();
+    // return index;
+}
+
+vector<PickupEvent> parse_historical_data(string fname, kd_tree_t& index,
+        int rows)
 {
     ifstream file(fname);
     string line;
@@ -74,7 +85,7 @@ vector<PickupEvent> parse_historical_data(string fname, int rows)
     for (int i = 0; i < rows && getline(file, line); i++)
     {
         PickupEvent pevent;
-        if (parse_data_line(line, pevent))
+        if (parse_data_line(line, index, pevent))
         {
             events.push_back(pevent);
         }

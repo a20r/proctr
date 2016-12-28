@@ -9,18 +9,17 @@ using namespace nanoflann;
 
 const double earth_radius = 6371;
 
-class GeoPoint
+struct GeoPoint
 {
-    public:
-        double  lng, lat;
+    double  lng, lat;
 
-        GeoPoint(double lng, double lat) : lng(lng), lat(lat)
-        {
-        }
+    GeoPoint(double lng, double lat) : lng(lng), lat(lat)
+    {
+    }
 
-        GeoPoint()
-        {
-        }
+    GeoPoint()
+    {
+    }
 };
 
 class GeoPoints
@@ -66,28 +65,58 @@ class GeoPoints
         }
 };
 
-class PickupEvent
+struct PickupEvent
 {
-    public:
-        GeoPoint pickup, dropoff;
-        ptime pickup_time, dropoff_time;
+    GeoPoint pickup, dropoff;
+    int pickup_st, dropoff_st;
+    ptime pickup_time, dropoff_time;
 
-        PickupEvent()
-        {
-        }
+    PickupEvent()
+    {
+    }
 
-        PickupEvent(GeoPoint pickup, GeoPoint dropoff,
-                ptime pickup_time, ptime dropoff_time) :
-            pickup(pickup), dropoff(dropoff),
-            pickup_time(pickup_time), dropoff_time(dropoff_time)
-        {
-        }
+    PickupEvent(GeoPoint pickup, GeoPoint dropoff,
+            int pickup_st, int dropoff_st,
+            ptime pickup_time, ptime dropoff_time) :
+        pickup(pickup), dropoff(dropoff),
+        pickup_st(pickup_st), dropoff_st(dropoff_st),
+        pickup_time(pickup_time), dropoff_time(dropoff_time)
+    {
+    }
 
-        bool operator<(const PickupEvent& other) const
-        {
-            return pickup_time < other.pickup_time;
-        }
+    bool operator<(const PickupEvent& other) const
+    {
+        return pickup_time < other.pickup_time;
+    }
 };
+
+inline ostream &operator<<(ostream &os, GeoPoint const &geo)
+{
+    os << "[lng: " << geo.lng << ", lat: " << geo.lat << "]";
+    return os;
+}
+
+inline ostream &operator<<(ostream &os, PickupEvent const &event)
+{
+    os << "Pickup Station: " << event.pickup_st << "\n";
+    os << "Dropoff Station: " << event.dropoff_st << "\n";
+    os << "Pickup Geo: " << event.pickup << "\n";
+    os << "Dropoff Geo: " << event.dropoff<< "\n";
+    os << "Pickup Time: " << event.pickup_time << "\n";
+    os << "Dropoff Time: " << event.dropoff_time;
+    return os;
+}
+
+inline ostream &operator<<(ostream &os, vector<PickupEvent> const &events)
+{
+    for (int i = 0; i < events.size(); i++)
+    {
+        os << "\n[==================== PickupEvent (";
+        os << i + 1 << "/" << events.size() << ") ====================]" << "\n";
+        os << events[i] << endl;
+    }
+    return os;
+}
 
 typedef KDTreeSingleIndexAdaptor<
     L2_Simple_Adaptor<double, GeoPoints>,
@@ -98,6 +127,9 @@ void create_prior(vector<ptime>& times, Prior& prior);
 Prior **create_priors(int n_stations);
 GeoPoints load_stations();
 vector<ptime> parse_ts_file(int p_st, int d_st);
-vector<PickupEvent> parse_historical_data(string fname, int rows)
+vector<PickupEvent> parse_historical_data(string fname, kd_tree_t& index,
+        int rows);
+size_t get_nearest(kd_tree_t &index, double lng, double lat);
+kd_tree_t create_stations_kd_tree();
 
 #endif
