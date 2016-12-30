@@ -2,6 +2,7 @@
 #include <fstream>
 #include "gtest/gtest.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/progress.hpp>
 #include "proctr/prior.hpp"
 #include "proctr/data_reader.hpp"
 
@@ -10,29 +11,26 @@ using namespace boost::posix_time;
 
 TEST(PriorTest, ReaderTest)
 {
-    GeoPoints gps = load_stations();
-    cout << "Building tree" << endl;
-    kd_tree_t index(2, gps, KDTreeSingleIndexAdaptorParams(1));
-    index.buildIndex();
-    cout << "Creating priors" << endl;
+    kd_tree_t *index = create_stations_kd_tree();
     create_ts_files(index);
 }
 
 TEST(PriorTest, CreatePriorsTest)
 {
-    Prior **priors = create_priors(100);
+    Prior *priors = create_priors(100);
 }
 
 TEST(PriorTest, DetermineRatesTest)
 {
     Prior prior;
-    vector<ptime> times = parse_ts_file(42, 21);
+    vector<ptime> times = parse_region_ts_files(42, 100);
     create_prior(times, prior);
 
     time_duration dt = minutes(10);
     double min_rate = 0;
-    double max_rate = 0.05;
+    double max_rate = prior.get_max_rate();
     double dr = (max_rate - min_rate) / 100;
+    boost::progress_display show_progress(7 * 6 * 24);
 
     #pragma omp parallel for
     for (int i = 0; i < 7; i++)
@@ -53,6 +51,9 @@ TEST(PriorTest, DetermineRatesTest)
                 rate += dr;
             }
             cur_t += dt;
+
+            #pragma omp critical
+            ++show_progress;
         }
         fout.close();
     }

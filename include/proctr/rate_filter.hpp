@@ -17,13 +17,13 @@ class RateFilter
         double vol;
         double resample_thresh;
         int n_rates;
-        Prior *prior;
+        Prior prior;
         ptime last_time;
 
     public:
         RateFilter();
         RateFilter(double max_rate, int n_rates, double vol,
-                double resample_thresh, Prior *prior,
+                double resample_thresh, Prior prior,
                 ptime starting_time);
         ~RateFilter();
         void observe(int n_obs, ptime time);

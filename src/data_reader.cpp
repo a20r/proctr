@@ -51,7 +51,7 @@ bool parse_data_line(string line, string &p_dt, string &d_dt,
     return !(p_lng == 0 or p_lat == 0 or d_lng == 0 or d_lat == 0);
 }
 
-bool parse_data_line(string line, kd_tree_t &index, PickupEvent &pevent)
+bool parse_data_line(string line, kd_tree_t *index, PickupEvent &pevent)
 {
     string p_dt, d_dt;
     double p_lng, p_lat, d_lng, d_lat;
@@ -67,15 +67,15 @@ bool parse_data_line(string line, kd_tree_t &index, PickupEvent &pevent)
     return false;
 }
 
-kd_tree_t create_stations_kd_tree()
+kd_tree_t *create_stations_kd_tree()
 {
     GeoPoints gps = load_stations();
-    kd_tree_t index(2, gps, KDTreeSingleIndexAdaptorParams(1));
-    index.buildIndex();
-    // return index;
+    kd_tree_t *index = new kd_tree_t(2, gps, KDTreeSingleIndexAdaptorParams(1));
+    index->buildIndex();
+    return index;
 }
 
-vector<PickupEvent> parse_historical_data(string fname, kd_tree_t& index,
+vector<PickupEvent> parse_historical_data(string fname, kd_tree_t *index,
         int rows)
 {
     ifstream file(fname);
@@ -130,14 +130,14 @@ GeoPoints load_stations()
     return gps;
 }
 
-size_t get_nearest(kd_tree_t &index, double lng, double lat)
+size_t get_nearest(kd_tree_t *index, double lng, double lat)
 {
     size_t ret_index;
     double out_dist_sqr;
     KNNResultSet<double> resultSet(1);
     resultSet.init(&ret_index, &out_dist_sqr);
     double query_pt[2] = {lng, lat};
-    index.findNeighbors(resultSet, &query_pt[0], SearchParams(10));
+    index->findNeighbors(resultSet, &query_pt[0], SearchParams(10));
     return ret_index;
 }
 
@@ -167,7 +167,7 @@ void write_dt(size_t p_st, size_t d_st, string p_dt)
     fout.close();
 }
 
-void create_ts_files(kd_tree_t &index)
+void create_ts_files(kd_tree_t *index)
 {
     ifstream file(data_fname);
     string l;
@@ -208,8 +208,20 @@ vector<ptime> parse_ts_file(int p_st, int d_st)
         dts.push_back(pt);
     }
 
-    sort(dts.begin(), dts.end());
     return dts;
+}
+
+vector<ptime> parse_region_ts_files(int st, int n_stations)
+{
+    vector<ptime> all_dts;
+    for (int i = 0; i < n_stations; i++)
+    {
+        vector<ptime> r_dts = parse_ts_file(st, i);
+        all_dts.reserve(all_dts.size() + distance(r_dts.begin(), r_dts.end()));
+        all_dts.insert(all_dts.end(), r_dts.begin(), r_dts.end());
+    }
+    sort(all_dts.begin(), all_dts.end());
+    return all_dts;
 }
 
 void create_prior(vector<ptime>& times, Prior& prior)
@@ -233,7 +245,7 @@ void create_prior(vector<ptime>& times, Prior& prior)
     }
 }
 
-Prior **create_priors(int n_stations)
+Prior **create_pairwise_priors(int n_stations)
 {
     Prior **priors = new Prior *[n_stations];
     for (int i = 0; i < n_stations; i++)
@@ -249,8 +261,25 @@ Prior **create_priors(int n_stations)
         for (int j = 0; j < n_stations; j++)
         {
             vector<ptime> times = parse_ts_file(i, j);
+            sort(times.begin(), times.end());
             create_prior(times, priors[i][j]);
         }
+        ++show_progress;
+    }
+
+    return priors;
+}
+
+Prior *create_priors(int n_stations)
+{
+    Prior *priors = new Prior[n_stations];
+    boost::progress_display show_progress(n_stations);
+
+    #pragma omp parallel for
+    for (int i = 0; i < n_stations; i++)
+    {
+        vector<ptime> times = parse_region_ts_files(i, n_stations);
+        create_prior(times, priors[i]);
         ++show_progress;
     }
 

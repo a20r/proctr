@@ -22,23 +22,17 @@ TEST(PlannerTest, InitialTest)
     string fname = "data/nyc_taxi_data.csv";
     int rows = 1000;
 
-    Prior **priors = create_priors(n_stations);
-    // RateFilter **rfs = new RateFilter *[n_stations];
-    //
-    // for (int i = 0; i < n_stations; i++)
-    // {
-    //     rfs[i] = new RateFilter[n_stations];
-    //     for (int j = 0; j < n_stations; j++)
-    //     {
-    //         rfs[i][j] = RateFilter(max_rate, n_rates, vol, resample_thresh,
-    //                 &priors[i][j], starting_time);
-    //     }
-    // }
+    Prior *priors = create_priors(n_stations);
+    RateFilter *rfs = new RateFilter[n_stations];
 
-    GeoPoints gps = load_stations();
-    kd_tree_t index(2, gps, KDTreeSingleIndexAdaptorParams(1));
-    index.buildIndex();
+    for (int i = 0; i < n_stations; i++)
+    {
+        rfs[i] = RateFilter(max_rate, n_rates, vol, resample_thresh,
+                priors[i], starting_time);
+    }
+
+    kd_tree_t *index = create_stations_kd_tree();
     vector<PickupEvent> events = parse_historical_data(fname, index, rows);
     cout << events << endl;
-    // Planner planner(n_stations, rfs);
+    Planner planner(n_stations, rfs, index);
 }

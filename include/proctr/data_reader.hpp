@@ -112,9 +112,11 @@ inline ostream &operator<<(ostream &os, vector<PickupEvent> const &events)
     for (int i = 0; i < events.size(); i++)
     {
         os << "\n[==================== PickupEvent (";
-        os << i + 1 << "/" << events.size() << ") ====================]" << "\n";
+        os << i + 1 << "/" << events.size();
+        os << ") ====================]" << "\n";
         os << events[i] << endl;
     }
+
     return os;
 }
 
@@ -122,14 +124,16 @@ typedef KDTreeSingleIndexAdaptor<
     L2_Simple_Adaptor<double, GeoPoints>,
     GeoPoints, 2> kd_tree_t;
 
-void create_ts_files(kd_tree_t &index);
+void create_ts_files(kd_tree_t *index);
 void create_prior(vector<ptime>& times, Prior& prior);
-Prior **create_priors(int n_stations);
+Prior **create_pairwise_priors(int n_stations);
+Prior *create_priors(int n_stations);
 GeoPoints load_stations();
 vector<ptime> parse_ts_file(int p_st, int d_st);
-vector<PickupEvent> parse_historical_data(string fname, kd_tree_t& index,
+vector<ptime> parse_region_ts_files(int st, int n_stations);
+vector<PickupEvent> parse_historical_data(string fname, kd_tree_t *index,
         int rows);
-size_t get_nearest(kd_tree_t &index, double lng, double lat);
-kd_tree_t create_stations_kd_tree();
+size_t get_nearest(kd_tree_t *index, double lng, double lat);
+kd_tree_t *create_stations_kd_tree();
 
 #endif

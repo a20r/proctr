@@ -15,7 +15,7 @@ RateFilter::RateFilter()
 }
 
 RateFilter::RateFilter(double max_rate, int n_rates,
-        double vol, double resample_thresh, Prior *prior,
+        double vol, double resample_thresh, Prior prior,
         ptime starting_time) :
     n_rates(n_rates),
     vol(vol),
@@ -29,7 +29,7 @@ RateFilter::RateFilter(double max_rate, int n_rates,
 
 RateFilter::~RateFilter()
 {
-    delete prior;
+    // delete prior;
 }
 
 void RateFilter::observe(int n_obs, ptime time)
@@ -39,7 +39,7 @@ void RateFilter::observe(int n_obs, ptime time)
     double secs = (time - last_time).total_seconds();
     for (int i = 0; i < n_rates; i++)
     {
-        double prior_prob = prior->pdf(time, rates[i]);
+        double prior_prob = prior.pdf(time, rates[i]);
         probs[i] *= pdf(poisson(rates[i] * secs), n_obs) * prior_prob;
     }
 
