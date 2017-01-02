@@ -11,9 +11,14 @@ using namespace boost::posix_time;
 class Prior
 {
     private:
-        KDE kdes[7];
+        ptime last_time;
+        double last_rate = -1;
+        double d_sum = 0;
+        double d_sum_sq = 0;
+        int n_data = 0;
         double min_rate = numeric_limits<double>::max();
         double max_rate = 0;
+        KDE kdes[7];
 
     public:
         Prior();
@@ -24,6 +29,7 @@ class Prior
         void add_data(ptime time, double rate);
         double get_min_rate();
         double get_max_rate();
+        double get_volatility();
         vector<double> rates;
 };
 

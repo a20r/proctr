@@ -67,12 +67,18 @@ bool parse_data_line(string line, kd_tree_t *index, PickupEvent &pevent)
     return false;
 }
 
+kd_tree_t *create_kd_tree(GeoPoints pts)
+{
+    kd_tree_t *index = new kd_tree_t(2, pts,
+            KDTreeSingleIndexAdaptorParams(1));
+    index->buildIndex();
+    return index;
+}
+
 kd_tree_t *create_stations_kd_tree()
 {
     GeoPoints gps = load_stations();
-    kd_tree_t *index = new kd_tree_t(2, gps, KDTreeSingleIndexAdaptorParams(1));
-    index->buildIndex();
-    return index;
+    return create_kd_tree(gps);
 }
 
 vector<PickupEvent> parse_historical_data(string fname, kd_tree_t *index,

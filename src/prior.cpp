@@ -40,10 +40,29 @@ void Prior::add_data(ptime time, double rate)
         max_rate = rate;
     }
 
+    if (last_rate < 0)
+    {
+        last_rate = rate;
+        last_time = time;
+    }
+    else
+    {
+        double dt = (time - last_time).total_seconds();
+        double drate = (rate - last_rate) / dt;
+        d_sum += drate;
+        d_sum_sq += drate * drate;
+        n_data++;
+    }
+
     tm t = to_tm(time);
     double t_secs = total_seconds(time);
     kdes[t.tm_wday].add_data(t_secs, rate);
     rates.push_back(rate);
+}
+
+double Prior::get_volatility()
+{
+    return sqrt((d_sum_sq - d_sum * d_sum / n_data) / n_data);
 }
 
 double Prior::get_min_rate()

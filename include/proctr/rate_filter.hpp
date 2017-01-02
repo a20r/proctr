@@ -18,15 +18,13 @@ class RateFilter
         double resample_thresh;
         int n_rates;
         Prior prior;
-        ptime last_time;
 
     public:
         RateFilter();
         RateFilter(double max_rate, int n_rates, double vol,
-                double resample_thresh, Prior prior,
-                ptime starting_time);
+                double resample_thresh, Prior prior);
         ~RateFilter();
-        void observe(int n_obs, ptime time);
+        void observe(int n_obs, ptime time, int secs);
         double get_probability(int i);
         double get_rate(int i);
         void normalize();

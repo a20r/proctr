@@ -2,22 +2,37 @@
 #define PROCTR_PLANNER_HPP
 
 #include <nanoflann.hpp>
+#include <eigen3/Eigen/Dense>
+#include "gurobi_c++.h"
+#include "proctr/graph.hpp"
 #include "proctr/prior.hpp"
 #include "proctr/data_reader.hpp"
 #include "proctr/rate_filter.hpp"
+#include "proctr/passive_rebalancing.hpp"
 
 class Planner
 {
     public:
         Planner();
-        Planner(int n_stations, RateFilter *rate_filters, kd_tree_t *index);
+        Planner(vector<GeoPoint> regions, int cap, RateFilter *rate_filters,
+            kd_tree_t *regions_index, kd_tree_t *nodes_index,
+            WeightedGraph<GeoPoint> graph);
         ~Planner();
-        void update_rates(vector<PickupEvent> &events);
+        void update_rates(vector<PickupEvent> &events, int secs);
+        MatrixXd get_costs(vector<GeoPoint> locs);
+        vector<size_t> get_all_nearest(kd_tree_t *index, vector<GeoPoint> locs);
+        VectorXd get_rates(int Nr);
+        vector<int> rebalance(vector<GeoPoint> locs);
 
     private:
-        kd_tree_t *index;
+        kd_tree_t *regions_index, *nodes_index;
+        vector<GeoPoint> regions;
         int n_stations;
+        int cap;
         RateFilter *rate_filters;
+        WeightedGraph<GeoPoint> graph;
+        vector<size_t> region_nodes;
+        GRBEnv *env;
 };
 
 #endif

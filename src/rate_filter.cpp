@@ -15,15 +15,13 @@ RateFilter::RateFilter()
 }
 
 RateFilter::RateFilter(double max_rate, int n_rates,
-        double vol, double resample_thresh, Prior prior,
-        ptime starting_time) :
+        double vol, double resample_thresh, Prior prior) :
     n_rates(n_rates),
     vol(vol),
     resample_thresh(resample_thresh),
     probs(ArrayXd::Constant(n_rates, 1.0 / n_rates)),
     rates(ArrayXd::LinSpaced(n_rates, max_rate / n_rates, max_rate)),
-    prior(prior),
-    last_time(starting_time)
+    prior(prior)
 {
 }
 
@@ -32,11 +30,10 @@ RateFilter::~RateFilter()
     // delete prior;
 }
 
-void RateFilter::observe(int n_obs, ptime time)
+void RateFilter::observe(int n_obs, ptime time, int secs)
 {
     resample();
 
-    double secs = (time - last_time).total_seconds();
     for (int i = 0; i < n_rates; i++)
     {
         double prior_prob = prior.pdf(time, rates[i]);
@@ -45,6 +42,7 @@ void RateFilter::observe(int n_obs, ptime time)
 
     normalize();
 }
+
 
 void RateFilter::normalize()
 {

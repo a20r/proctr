@@ -3,24 +3,15 @@
 
 #include <string>
 #include <boost/graph/edge_list.hpp>
+#include "proctr/data_reader.hpp"
 #include "proctr/graph.hpp"
 
 using namespace std;
 
-class LatLngNode
-{
-    public:
-        LatLngNode();
-        LatLngNode(double lat, double lng);
-        LatLngNode(string csv_line);
+typedef Edge<GeoPoint> GeoEdge;
 
-    private:
-        double lat, lng;
-};
+WeightedGraph<GeoPoint> read_graph(string points_fname, string edges_fname,
+        string durs_fname, kd_tree_t **index);
 
-typedef Edge<LatLngNode> GeoEdge;
-
-WeightedGraph<LatLngNode> read_graph(string points_fname, string edges_fname,
-        string durs_fname);
 
 #endif

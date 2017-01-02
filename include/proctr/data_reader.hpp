@@ -20,6 +20,23 @@ struct GeoPoint
     GeoPoint()
     {
     }
+
+    GeoPoint(string csv_line)
+    {
+        stringstream line_stream(csv_line);
+        string cell;
+
+        int counter = 0;
+        while (getline(line_stream, cell, ','))
+        {
+            switch (counter++)
+            {
+                case 1: this->lat = stod(cell);
+                case 2: this->lng = stod(cell);
+            }
+        }
+    }
+
 };
 
 class GeoPoints
@@ -134,6 +151,7 @@ vector<ptime> parse_region_ts_files(int st, int n_stations);
 vector<PickupEvent> parse_historical_data(string fname, kd_tree_t *index,
         int rows);
 size_t get_nearest(kd_tree_t *index, double lng, double lat);
+kd_tree_t *create_kd_tree(GeoPoints pts);
 kd_tree_t *create_stations_kd_tree();
 
 #endif
