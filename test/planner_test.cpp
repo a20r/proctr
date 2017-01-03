@@ -19,7 +19,7 @@ TEST(PlannerTest, InitialTest)
     double n_rates = 100;
     double vol = 0;
     double resample_thresh = 1;
-    int rows = 1000;
+    int rows = 10;
     string fname = "data/nyc_taxi_data.csv";
     string points_fname = "data/nyc-graph/points.csv";
     string edges_fname = "data/nyc-graph/edges.csv";
@@ -41,6 +41,10 @@ TEST(PlannerTest, InitialTest)
     vector<GeoPoint> regions = load_stations();
     vector<PickupEvent> events = parse_historical_data(fname, regions, rows);
     Planner planner(regions, max_cap, rfs, graph);
-    cout << planner.graph_distance(graph.get_node(0),
-            graph.get_node(100)) << endl;
+    vector<GeoPoint> locs;
+    for (auto event : events)
+    {
+        locs.push_back(event.pickup);
+    }
+    planner.rebalance(locs);
 }

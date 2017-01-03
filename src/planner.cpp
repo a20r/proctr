@@ -18,6 +18,7 @@ Planner::Planner(vector<GeoPoint> regions, int cap, RateFilter *rate_filters,
     graph(graph),
     env(new GRBEnv)
 {
+    region_ids = get_all_nearest(graph.get_nodes(), regions);
 }
 
 Planner::~Planner()
@@ -59,13 +60,13 @@ void Planner::update_rates(vector<PickupEvent> &events, int secs)
     }
 }
 
-vector<size_t> Planner::get_all_nearest(kd_tree_t *index,
+vector<size_t> Planner::get_all_nearest(vector<GeoPoint> refs,
         vector<GeoPoint> locs)
 {
     vector<size_t> nearest;
     for (auto loc : locs)
     {
-        size_t near = get_nearest(index, loc.lng, loc.lat);
+        size_t near = get_nearest(refs, loc);
         nearest.push_back(near);
     }
     return nearest;
@@ -81,7 +82,17 @@ double Planner::graph_distance(GeoPoint src, GeoPoint sink)
 
 MatrixXd Planner::get_costs(vector<GeoPoint> locs)
 {
-    // Write this shit mate!
+    MatrixXd costs = MatrixXd::Zero(locs.size(), regions.size());
+    for (int i = 0; i < locs.size(); i++)
+    {
+        for (int j = 0; j < region_ids.size(); j++)
+        {
+            costs(i, j) = graph_distance(locs[i],
+                    graph.get_node(region_ids[j]));
+        }
+    }
+
+    return costs;
 }
 
 VectorXd Planner::get_rates(int Nr)
@@ -101,5 +112,9 @@ vector<int> Planner::rebalance(vector<GeoPoint> locs)
     int Nv = locs.size();
     int Nr = n_stations;
     VectorXd rates = get_rates(Nr);
-    VectorXd caps = VectorXd::Constant(cap, Nv);
+    VectorXi caps = VectorXi::Constant(cap, Nv);
+    MatrixXd costs = get_costs(locs);
+    double max_region_time = 2000;
+    RebalancingModel model = create_model(env, costs, rates, caps,
+            max_region_time, Nv, Nr);
 }

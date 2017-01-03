@@ -20,12 +20,14 @@ class Planner
         void update_rates(vector<PickupEvent> &events, int secs);
         double graph_distance(GeoPoint src, GeoPoint sink);
         MatrixXd get_costs(vector<GeoPoint> locs);
-        vector<size_t> get_all_nearest(kd_tree_t *index, vector<GeoPoint> locs);
+        vector<size_t> get_all_nearest(vector<GeoPoint> refs,
+            vector<GeoPoint> locs);
         VectorXd get_rates(int Nr);
         vector<int> rebalance(vector<GeoPoint> locs);
 
     private:
         vector<GeoPoint> regions;
+        vector<size_t> region_ids;
         int n_stations;
         int cap;
         RateFilter *rate_filters;
