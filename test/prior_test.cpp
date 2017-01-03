@@ -11,8 +11,8 @@ using namespace boost::posix_time;
 
 TEST(PriorTest, ReaderTest)
 {
-    kd_tree_t *index = create_stations_kd_tree();
-    create_ts_files(index);
+    vector<GeoPoint> regions = load_stations();
+    create_ts_files(regions);
 }
 
 TEST(PriorTest, CreatePriorsTest)

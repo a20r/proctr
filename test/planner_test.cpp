@@ -35,14 +35,12 @@ TEST(PlannerTest, InitialTest)
                 priors[i]);
     }
 
-    kd_tree_t *nodes_index;
-    WeightedGraph<GeoPoint> graph = read_graph(
-            points_fname, edges_fname, durs_fname, &nodes_index);
+    WeightedGraph<GeoPoint, GeoPointHash> graph = read_graph(
+            points_fname, edges_fname, durs_fname);
 
-    GeoPoints regions = load_stations();
-    kd_tree_t *regions_index = create_stations_kd_tree();
-    vector<PickupEvent> events = parse_historical_data(fname, regions_index,
-            rows);
-    Planner planner(regions.pts, max_cap, rfs, regions_index, nodes_index,
-            graph);
+    vector<GeoPoint> regions = load_stations();
+    vector<PickupEvent> events = parse_historical_data(fname, regions, rows);
+    Planner planner(regions, max_cap, rfs, graph);
+    cout << planner.graph_distance(graph.get_node(0),
+            graph.get_node(100)) << endl;
 }

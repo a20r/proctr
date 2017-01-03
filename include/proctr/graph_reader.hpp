@@ -10,8 +10,9 @@ using namespace std;
 
 typedef Edge<GeoPoint> GeoEdge;
 
-WeightedGraph<GeoPoint> read_graph(string points_fname, string edges_fname,
-        string durs_fname, kd_tree_t **index);
+WeightedGraph<GeoPoint, GeoPointHash> read_graph(string points_fname,
+        string edges_fname,
+        string durs_fname);
 
 
 #endif

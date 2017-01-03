@@ -15,23 +15,21 @@ class Planner
     public:
         Planner();
         Planner(vector<GeoPoint> regions, int cap, RateFilter *rate_filters,
-            kd_tree_t *regions_index, kd_tree_t *nodes_index,
-            WeightedGraph<GeoPoint> graph);
+            WeightedGraph<GeoPoint, GeoPointHash> graph);
         ~Planner();
         void update_rates(vector<PickupEvent> &events, int secs);
+        double graph_distance(GeoPoint src, GeoPoint sink);
         MatrixXd get_costs(vector<GeoPoint> locs);
         vector<size_t> get_all_nearest(kd_tree_t *index, vector<GeoPoint> locs);
         VectorXd get_rates(int Nr);
         vector<int> rebalance(vector<GeoPoint> locs);
 
     private:
-        kd_tree_t *regions_index, *nodes_index;
         vector<GeoPoint> regions;
         int n_stations;
         int cap;
         RateFilter *rate_filters;
-        WeightedGraph<GeoPoint> graph;
-        vector<size_t> region_nodes;
+        WeightedGraph<GeoPoint, GeoPointHash> graph;
         GRBEnv *env;
 };
 

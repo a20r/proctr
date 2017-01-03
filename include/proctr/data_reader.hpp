@@ -37,6 +37,42 @@ struct GeoPoint
         }
     }
 
+    double distance(GeoPoint& gl)
+    {
+        double lat1 = lat;
+        double lon1 = lng;
+        double lat2 = gl.lat;
+        double lon2 = gl.lng;
+        lon1 = lon1 * (M_PI / 180.0);
+        lat1 = lat1 * (M_PI / 180.0);
+        lon2 = lon2 * (M_PI / 180.0);
+        lat2 = lat2 * (M_PI / 180.0);
+        double dlon = lon2 - lon1;
+        double dlat = lat2 - lat1;
+        double a = pow(sin(dlat / 2.0), 2) + cos(lat1) * cos(lat2)
+            * pow(sin(dlon / 2.0), 2);
+        double c = 2 * asin(sqrt(a));
+        double dist_km = 6367 * c;
+        return dist_km;
+    }
+
+};
+
+inline bool operator==(const GeoPoint &a, const GeoPoint &b)
+{
+    double eps = 0.0000000001;
+    return abs(a.lng - b.lng) < eps and abs(a.lat - b.lat) < eps;
+}
+
+class GeoPointHash
+{
+    public:
+        size_t operator() (const GeoPoint &gp) const
+        {
+            const double lng_pos = gp.lng + 180;
+            const double lat_pos = gp.lat + 85;
+            return hash<double>()(360 * lng_pos + lat_pos);
+        }
 };
 
 class GeoPoints
@@ -141,16 +177,17 @@ typedef KDTreeSingleIndexAdaptor<
     L2_Simple_Adaptor<double, GeoPoints>,
     GeoPoints, 2> kd_tree_t;
 
-void create_ts_files(kd_tree_t *index);
+void create_ts_files(vector<GeoPoint> regions);
 void create_prior(vector<ptime>& times, Prior& prior);
 Prior **create_pairwise_priors(int n_stations);
 Prior *create_priors(int n_stations);
-GeoPoints load_stations();
+vector<GeoPoint> load_stations();
 vector<ptime> parse_ts_file(int p_st, int d_st);
 vector<ptime> parse_region_ts_files(int st, int n_stations);
-vector<PickupEvent> parse_historical_data(string fname, kd_tree_t *index,
-        int rows);
+vector<PickupEvent> parse_historical_data(string fname,
+        vector<GeoPoint>& regions, int rows);
 size_t get_nearest(kd_tree_t *index, double lng, double lat);
+size_t get_nearest(vector<GeoPoint> pts, GeoPoint my_pt);
 kd_tree_t *create_kd_tree(GeoPoints pts);
 kd_tree_t *create_stations_kd_tree();
 

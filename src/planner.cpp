@@ -1,23 +1,23 @@
 
 #include <nanoflann.hpp>
 #include <unordered_map>
+#include <boost/graph/graph_traits.hpp>
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/dijkstra_shortest_paths.hpp>
+#include <boost/property_map/property_map.hpp>
 #include "proctr/graph.hpp"
 #include "proctr/data_reader.hpp"
 #include "proctr/planner.hpp"
 
 Planner::Planner(vector<GeoPoint> regions, int cap, RateFilter *rate_filters,
-        kd_tree_t *regions_index, kd_tree_t *nodes_index,
-        WeightedGraph<GeoPoint> graph) :
+        WeightedGraph<GeoPoint, GeoPointHash> graph) :
     regions(regions),
     n_stations(regions.size()),
     cap(cap),
     rate_filters(rate_filters),
-    regions_index(regions_index),
-    nodes_index(nodes_index),
     graph(graph),
     env(new GRBEnv)
 {
-    region_nodes = get_all_nearest(nodes_index, regions);
 }
 
 Planner::~Planner()
@@ -71,8 +71,17 @@ vector<size_t> Planner::get_all_nearest(kd_tree_t *index,
     return nearest;
 }
 
+double Planner::graph_distance(GeoPoint src, GeoPoint sink)
+{
+    int src_node = get_nearest(graph.get_nodes(), src);
+    int sink_node = get_nearest(graph.get_nodes(), sink);
+    cout << src_node << ", " << sink_node << endl;
+    return graph.shortest_dist(src_node, sink_node);
+}
+
 MatrixXd Planner::get_costs(vector<GeoPoint> locs)
 {
+    // Write this shit mate!
 }
 
 VectorXd Planner::get_rates(int Nr)
@@ -91,7 +100,6 @@ vector<int> Planner::rebalance(vector<GeoPoint> locs)
 {
     int Nv = locs.size();
     int Nr = n_stations;
-    vector<size_t> regions = get_all_nearest(regions_index, locs);
     VectorXd rates = get_rates(Nr);
     VectorXd caps = VectorXd::Constant(cap, Nv);
 }

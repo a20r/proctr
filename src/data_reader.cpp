@@ -17,7 +17,7 @@ using namespace boost::filesystem;
 using namespace std;
 using namespace nanoflann;
 
-const string data_fname = "/home/wallar/fast_data/nyc_taxi_data.csv";
+const string data_fname = "data/nyc_taxi_data.csv";
 const string stations_fname = "data/stations.csv";
 const string ts_dir = "data/ts/";
 const int num_rows = 165114362;
@@ -51,14 +51,14 @@ bool parse_data_line(string line, string &p_dt, string &d_dt,
     return !(p_lng == 0 or p_lat == 0 or d_lng == 0 or d_lat == 0);
 }
 
-bool parse_data_line(string line, kd_tree_t *index, PickupEvent &pevent)
+bool parse_data_line(string line, vector<GeoPoint>& regions, PickupEvent &pevent)
 {
     string p_dt, d_dt;
     double p_lng, p_lat, d_lng, d_lat;
     if (parse_data_line(line, p_dt, d_dt, p_lng, p_lat, d_lng, d_lat))
     {
-        size_t p_st = get_nearest(index, p_lng, p_lat);
-        size_t d_st = get_nearest(index, d_lng, d_lat);
+        size_t p_st = get_nearest(regions, GeoPoint(p_lng, p_lat));
+        size_t d_st = get_nearest(regions, GeoPoint(d_lng, d_lat));
         pevent = PickupEvent(GeoPoint(p_lng, p_lat), GeoPoint(d_lng, d_lat),
                 p_st, d_st, time_from_string(p_dt), time_from_string(d_dt));
         return true;
@@ -75,14 +75,14 @@ kd_tree_t *create_kd_tree(GeoPoints pts)
     return index;
 }
 
-kd_tree_t *create_stations_kd_tree()
-{
-    GeoPoints gps = load_stations();
-    return create_kd_tree(gps);
-}
+// kd_tree_t *create_stations_kd_tree()
+// {
+//     GeoPoints gps = load_stations();
+//     return create_kd_tree(gps);
+// }
 
-vector<PickupEvent> parse_historical_data(string fname, kd_tree_t *index,
-        int rows)
+vector<PickupEvent> parse_historical_data(string fname,
+        vector<GeoPoint>& regions, int rows)
 {
     ifstream file(fname);
     string line;
@@ -91,7 +91,7 @@ vector<PickupEvent> parse_historical_data(string fname, kd_tree_t *index,
     for (int i = 0; i < rows && getline(file, line); i++)
     {
         PickupEvent pevent;
-        if (parse_data_line(line, index, pevent))
+        if (parse_data_line(line, regions, pevent))
         {
             events.push_back(pevent);
         }
@@ -118,9 +118,9 @@ bool parse_stations_line(string line, double &lng, double &lat)
     return true;
 }
 
-GeoPoints load_stations()
+vector<GeoPoint> load_stations()
 {
-    GeoPoints gps;
+    vector<GeoPoint> gps;
     ifstream file(stations_fname);
 
     string line;
@@ -130,7 +130,7 @@ GeoPoints load_stations()
         {
             double lng, lat;
             parse_stations_line(line, lng, lat);
-            gps.pts.push_back(GeoPoint(lng, lat));
+            gps.push_back(GeoPoint(lng, lat));
         }
     }
     return gps;
@@ -145,6 +145,23 @@ size_t get_nearest(kd_tree_t *index, double lng, double lat)
     double query_pt[2] = {lng, lat};
     index->findNeighbors(resultSet, &query_pt[0], SearchParams(10));
     return ret_index;
+}
+
+size_t get_nearest(vector<GeoPoint> pts, GeoPoint pt)
+{
+    double min_dist = pt.distance(pts[0]);
+    int closest = 0;
+    for (int i = 0; i < pts.size(); i++)
+    {
+        double dist = pt.distance(pts[i]);
+        if (dist < min_dist)
+        {
+            min_dist = dist;
+            closest = i;;
+        }
+    }
+
+    return closest;
 }
 
 string get_ts_dir(size_t p_st)
@@ -173,7 +190,7 @@ void write_dt(size_t p_st, size_t d_st, string p_dt)
     fout.close();
 }
 
-void create_ts_files(kd_tree_t *index)
+void create_ts_files(vector<GeoPoint> regions)
 {
     ifstream file(data_fname);
     string l;
@@ -191,8 +208,8 @@ void create_ts_files(kd_tree_t *index)
         double p_lng, p_lat, d_lng, d_lat;
         if (parse_data_line(line, p_dt, d_dt, p_lng, p_lat, d_lng, d_lat))
         {
-            size_t p_st = get_nearest(index, p_lng, p_lat);
-            size_t d_st = get_nearest(index, d_lng, d_lat);
+            size_t p_st = get_nearest(regions, GeoPoint(p_lng, p_lat));
+            size_t d_st = get_nearest(regions, GeoPoint(d_lng, d_lat));
             ptime pt = time_from_string(p_dt);
             ptime dt = time_from_string(d_dt);
             write_dt(p_st, d_st, p_dt);

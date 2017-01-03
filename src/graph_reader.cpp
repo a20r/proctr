@@ -56,7 +56,7 @@ vector<GeoEdge> read_edges_file(string edges_fname, vector<GeoPoint>& nodes)
     int from, to;
     vector<GeoEdge> edges;
 
-    while(getline(edges_file, line))
+    while (getline(edges_file, line))
     {
         read_edge_line(line, from, to);
         edges.push_back(GeoEdge(nodes[from], nodes[to]));
@@ -79,14 +79,11 @@ vector<double> read_durs_file(string durs_fname)
     return durs;
 }
 
-WeightedGraph<GeoPoint> read_graph(string points_fname, string edges_fname,
-        string durs_fname, kd_tree_t **index)
+WeightedGraph<GeoPoint, GeoPointHash> read_graph(string points_fname,
+        string edges_fname, string durs_fname)
 {
     vector<GeoPoint> nodes = read_points(points_fname);
     vector<GeoEdge> edges = read_edges_file(edges_fname, nodes);
     vector<double> durs = read_durs_file(durs_fname);
-    GeoPoints gps;
-    gps.pts = nodes;
-    *index = create_kd_tree(gps);
-    return WeightedGraph<GeoPoint>(nodes, edges, durs);
+    return WeightedGraph<GeoPoint, GeoPointHash>(nodes, edges, durs);
 }
