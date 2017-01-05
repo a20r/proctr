@@ -268,7 +268,7 @@ void create_prior(vector<ptime>& times, Prior& prior)
     }
 }
 
-Prior **create_pairwise_priors(int n_stations)
+Prior **create_pairwise_priors(int n_stations, double perc)
 {
     Prior **priors = new Prior *[n_stations];
     for (int i = 0; i < n_stations; i++)

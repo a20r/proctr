@@ -62,6 +62,7 @@ TEST(ILPTest, InitialTest)
                 max_region_time,
                 Nv, Nr);
         model.solve(assignments, durs);
+
         for (int v = 0; v < Nv; v++)
         {
             cout << v << " --> " << assignments[v];

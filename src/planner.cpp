@@ -76,16 +76,15 @@ double Planner::graph_distance(GeoPoint src, GeoPoint sink)
 {
     int src_node = get_nearest(graph.get_nodes(), src);
     int sink_node = get_nearest(graph.get_nodes(), sink);
-    cout << src_node << ", " << sink_node << endl;
     return graph.shortest_dist(src_node, sink_node);
 }
 
 MatrixXd Planner::get_costs(vector<GeoPoint> locs)
 {
-    MatrixXd costs = MatrixXd::Zero(locs.size(), regions.size());
+    MatrixXd costs = MatrixXd::Zero(locs.size(), n_stations);
     for (int i = 0; i < locs.size(); i++)
     {
-        for (int j = 0; j < region_ids.size(); j++)
+        for (int j = 0; j < n_stations; j++)
         {
             costs(i, j) = graph_distance(locs[i],
                     graph.get_node(region_ids[j]));
@@ -107,14 +106,55 @@ VectorXd Planner::get_rates(int Nr)
     return rates;
 }
 
-vector<int> Planner::rebalance(vector<GeoPoint> locs)
+double Planner::max_region_time_heuristic(int Nv, int Nr,
+        MatrixXd costs, VectorXd rates)
+{
+    vector<int> n_vecs(Nr, 0);
+    for (int v = 0; v < Nv; v++)
+    {
+        double min_cost = 0;
+        int min_cost_region = 0;
+        for (int r = 0; r < Nr; r++)
+        {
+            double cost = costs(v, r);
+            if (r == 0 or cost < min_cost)
+            {
+                min_cost = cost;
+                min_cost_region = r;
+            }
+        }
+
+        n_vecs[min_cost_region]++;
+    }
+
+    double max_region_time = 0;
+    for (int r = 0; r < Nr; r++)
+    {
+        double region_time = cap * n_vecs[r] / rates[r];
+        if (region_time > max_region_time)
+        {
+            max_region_time = region_time;
+        }
+    }
+
+    return max_region_time;
+}
+
+RebalancingSolution Planner::rebalance(vector<GeoPoint> locs)
 {
     int Nv = locs.size();
     int Nr = n_stations;
-    VectorXd rates = get_rates(Nr);
-    VectorXi caps = VectorXi::Constant(cap, Nv);
     MatrixXd costs = get_costs(locs);
-    double max_region_time = 2000;
+    VectorXd rates = get_rates(Nr);
+    VectorXi caps = VectorXi::Constant(Nv, cap);
+    double max_region_time = max_region_time_heuristic(Nv, Nr, costs, rates);
+    vector<int> assignments;
+    unordered_map<int, double> durs;
     RebalancingModel model = create_model(env, costs, rates, caps,
             max_region_time, Nv, Nr);
+    model.solve(assignments, durs);
+    RebalancingSolution sol = {
+        costs, rates, caps, max_region_time,
+        assignments, durs, Nv, Nr};
+    return sol;
 }

@@ -3,12 +3,24 @@
 
 #include <nanoflann.hpp>
 #include <eigen3/Eigen/Dense>
+#include <unordered_map>
 #include "gurobi_c++.h"
 #include "proctr/graph.hpp"
 #include "proctr/prior.hpp"
 #include "proctr/data_reader.hpp"
 #include "proctr/rate_filter.hpp"
 #include "proctr/passive_rebalancing.hpp"
+
+struct RebalancingSolution
+{
+    MatrixXd costs;
+    VectorXd rates;
+    VectorXi caps;
+    double max_region_time;
+    vector<int> assignments;
+    unordered_map<int, double> durations;
+    int Nv, Nr;
+};
 
 class Planner
 {
@@ -23,7 +35,9 @@ class Planner
         vector<size_t> get_all_nearest(vector<GeoPoint> refs,
             vector<GeoPoint> locs);
         VectorXd get_rates(int Nr);
-        vector<int> rebalance(vector<GeoPoint> locs);
+        double max_region_time_heuristic(int Nv, int Nr, MatrixXd costs,
+                VectorXd rates);
+        RebalancingSolution rebalance(vector<GeoPoint> locs);
 
     private:
         vector<GeoPoint> regions;
@@ -34,5 +48,19 @@ class Planner
         WeightedGraph<GeoPoint, GeoPointHash> graph;
         GRBEnv *env;
 };
+
+inline ostream &operator<<(ostream &os, RebalancingSolution const &sol)
+{
+    os << "Region time upper bound: " << sol.max_region_time << endl;
+    os << "Assignments:" << endl;
+    for (int v = 0; v < sol.Nv; v++)
+    {
+        int assign = sol.assignments[v];
+        os << "\t" << v << " --> " << assign;
+        os << " for " << sol.durations.at(assign);
+        os << " secs" << endl;
+    }
+    return os;
+}
 
 #endif

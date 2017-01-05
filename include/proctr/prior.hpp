@@ -19,6 +19,7 @@ class Prior
         double min_rate = numeric_limits<double>::max();
         double max_rate = 0;
         KDE kdes[7];
+        int n_points[7];
 
     public:
         Prior();
