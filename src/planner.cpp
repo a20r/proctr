@@ -131,15 +131,6 @@ double Planner::max_region_time_heuristic(int Nv, int Nr,
     for (int r = 0; r < Nr; r++)
     {
         double region_time = (enroute_seats[r] + cap * n_vecs[r]) / rates[r];
-        if (region_time > 100000)
-        {
-            cout << "region time " << region_time << endl;
-            cout << "enroute_seats " << enroute_seats[r] << endl;
-            cout << "cap " << cap << endl;
-            cout << "n_vecs " << n_vecs[r] << endl;
-            cout << "rates " << rates[r] << endl;
-        }
-
         if (region_time > max_region_time and rates[r] > 0)
         {
             max_region_time = region_time;
@@ -156,9 +147,6 @@ VectorXi Planner::get_enroute_seats(vector<GeoPoint> enroute,
     for (int i = 0; i < enroute.size(); i++)
     {
         int en_id = get_nearest(regions, enroute[i]);
-        // cout << "enroute_free_seats " << enroute_free_seats[i] << endl;
-        // cout << "enroute_seats " << enroute_seats[en_id] << endl;
-        // cout << "en_id " << en_id << endl;
         enroute_seats[en_id] = enroute_seats[en_id] + enroute_free_seats[i];
     }
     return enroute_seats;
@@ -176,7 +164,6 @@ RebalancingSolution Planner::rebalance(vector<GeoPoint> idle,
             enroute_free_seats, Nr);
     double max_region_time = max_region_time_heuristic(Nv, Nr, costs, rates,
             enroute_seats);
-    cout << "Max region time " << max_region_time << endl;
     vector<int> assignments;
     unordered_map<int, double> durs;
     RebalancingModel model = create_model(
@@ -184,8 +171,13 @@ RebalancingSolution Planner::rebalance(vector<GeoPoint> idle,
             enroute_seats,
             max_region_time, Nv, Nr);
     model.solve(assignments, durs);
+    vector<GeoPoint> assignment_locs(Nv);
+    for (int i = 0; i < Nv; i++)
+    {
+        assignment_locs[i] = regions[assignments[i]];
+    }
     RebalancingSolution sol = {
         costs, rates, caps, max_region_time,
-        assignments, durs, Nv, Nr};
+        assignments, assignment_locs, durs, Nv, Nr};
     return sol;
 }

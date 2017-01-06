@@ -18,6 +18,7 @@ struct RebalancingSolution
     VectorXi caps;
     double max_region_time;
     vector<int> assignments;
+    vector<GeoPoint> assignment_locs;
     unordered_map<int, double> durations;
     int Nv, Nr;
 };
@@ -67,6 +68,7 @@ inline ostream &operator<<(ostream &os, RebalancingSolution const &sol)
     {
         int assign = sol.assignments[v];
         os << "\t" << v << " --> " << assign;
+        os << " " << sol.assignment_locs[v];
         os << " for " << sol.durations.at(assign);
         os << " secs" << endl;
     }
