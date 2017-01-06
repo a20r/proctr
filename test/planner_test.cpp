@@ -18,7 +18,7 @@ TEST(PlannerTest, InitialTest)
     double n_rates_rf = 100;
     double vol = 0;
     double resample_thresh = 0.1 * n_rates_rf;
-    int rows = 30;
+    int rows = 100;
 
     string fname = "data/nyc_taxi_data.csv";
     string points_fname = "data/nyc-graph/points.csv";
@@ -42,15 +42,23 @@ TEST(PlannerTest, InitialTest)
     Planner planner(regions, max_cap, rfs, graph);
 
     // using the pickup events as idle vehicle data as an example
-    vector<GeoPoint> locs;
-    for (auto event : events)
+    vector<GeoPoint> idle, enroute;
+    vector<int> enroute_free_seats;
+    for (int i = 0; i < events.size() / 2; i++)
     {
-        locs.push_back(event.pickup);
+        idle.push_back(events[i].pickup);
+    }
+
+    for (int i = events.size() / 2; i < events.size(); i++)
+    {
+        enroute.push_back(events[i].pickup);
+        enroute_free_seats.push_back(7);
     }
 
     // updates the rates for 10 seconds with the new events and
     // and then rebalances the "idle" vehicles
     planner.update_rates(events, 10);
-    RebalancingSolution sol = planner.rebalance(locs);
+    RebalancingSolution sol = planner.rebalance(idle, enroute,
+            enroute_free_seats);
     cout << sol << endl;
 }

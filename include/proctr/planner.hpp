@@ -22,6 +22,12 @@ struct RebalancingSolution
     int Nv, Nr;
 };
 
+struct VehicleState
+{
+    GeoPoint location;
+    int free_seats;
+};
+
 class Planner
 {
     public:
@@ -36,8 +42,12 @@ class Planner
             vector<GeoPoint> locs);
         VectorXd get_rates(int Nr);
         double max_region_time_heuristic(int Nv, int Nr, MatrixXd costs,
-                VectorXd rates);
-        RebalancingSolution rebalance(vector<GeoPoint> locs);
+                VectorXd rates, VectorXi enroute_seats);
+        VectorXi get_enroute_seats(vector<GeoPoint> enroute,
+                vector<int> enroute_free_seats, int Nr);
+        RebalancingSolution rebalance(vector<GeoPoint> idle,
+                vector<GeoPoint> enroute, vector<int> enroute_free_seats);
+
 
     private:
         vector<GeoPoint> regions;

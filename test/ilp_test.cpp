@@ -51,6 +51,7 @@ TEST(ILPTest, InitialTest)
     MatrixXd costs = random_real_matrix(Nv, Nr, 0, 1000);
     VectorXd rates = random_real_matrix(Nr, 1, 0, 0.01);
     VectorXi caps = random_int_matrix(Nv, 1, 1, 10);
+    VectorXi enroute_caps = random_int_matrix(Nv, 1, 1, 10);
 
     try
     {
@@ -59,6 +60,7 @@ TEST(ILPTest, InitialTest)
         RebalancingModel model = create_model(
                 env,
                 costs, rates, caps,
+                enroute_caps,
                 max_region_time,
                 Nv, Nr);
         model.solve(assignments, durs);

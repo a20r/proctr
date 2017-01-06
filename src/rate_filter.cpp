@@ -37,8 +37,9 @@ void RateFilter::observe(int n_obs, ptime time, int secs)
     for (int i = 0; i < n_rates; i++)
     {
         double rate = rates[i];
-        double prior_prob = prior->pdf(time, rate);
-        probs[i] *= pdf(poisson(rate * secs), n_obs) * prior_prob;
+        double prior_prob = prior->pdf(time, rate) + 1e-8;
+        double update_prob = pdf(poisson(rate * secs), n_obs) + 1e-8;
+        probs[i] *= update_prob * prior_prob;
     }
 
     normalize();
