@@ -9,6 +9,10 @@
 #include "proctr/data_reader.hpp"
 #include "proctr/planner.hpp"
 
+Planner::Planner()
+{
+}
+
 Planner::Planner(vector<GeoPoint> regions, int cap, RateFilter *rate_filters,
         WeightedGraph<GeoPoint, GeoPointHash> graph) :
     regions(regions),
@@ -23,7 +27,7 @@ Planner::Planner(vector<GeoPoint> regions, int cap, RateFilter *rate_filters,
 
 Planner::~Planner()
 {
-    delete env;
+    // delete env;
 }
 
 void Planner::update_rates(vector<PickupEvent> &events, int secs)

@@ -7,6 +7,7 @@
 #include "proctr/data_reader.hpp"
 #include "proctr/graph_reader.hpp"
 #include "proctr/planner.hpp"
+#include "proctr/rebalancer.hpp"
 
 using namespace std;
 using namespace boost::posix_time;
@@ -59,6 +60,36 @@ TEST(PlannerTest, InitialTest)
     // and then rebalances the "idle" vehicles
     planner.update_rates(events, 10);
     RebalancingSolution sol = planner.rebalance(idle, enroute,
+            enroute_free_seats);
+    cout << sol << endl;
+}
+
+TEST(PlannerTest, RebalancerTest)
+{
+    RebalancerParams params;
+    Rebalancer rebalancer(params);
+
+    // using the pickup events as idle vehicle data as an example
+    string nyc_data_fname = "data/nyc_taxi_data.csv";
+    int rows = 100;
+    vector<GeoPoint> regions = rebalancer.get_regions();
+    vector<PickupEvent> events = parse_historical_data(
+            nyc_data_fname, regions, rows);
+    vector<GeoPoint> idle, enroute;
+    vector<int> enroute_free_seats;
+    for (int i = 0; i < events.size() / 2; i++)
+    {
+        idle.push_back(events[i].pickup);
+    }
+
+    for (int i = events.size() / 2; i < events.size(); i++)
+    {
+        enroute.push_back(events[i].pickup);
+        enroute_free_seats.push_back(7);
+    }
+
+    rebalancer.update_rates(events, 10);
+    RebalancingSolution sol = rebalancer.rebalance(idle, enroute,
             enroute_free_seats);
     cout << sol << endl;
 }

@@ -183,6 +183,7 @@ void create_prior(vector<ptime>& times, Prior& prior);
 Prior **create_pairwise_priors(int n_stations);
 Prior *create_priors(int n_stations);
 vector<GeoPoint> load_stations();
+vector<GeoPoint> load_stations(string fname);
 vector<ptime> parse_ts_file(int p_st, int d_st);
 vector<ptime> parse_region_ts_files(int st, int n_stations);
 vector<PickupEvent> parse_historical_data(string fname,

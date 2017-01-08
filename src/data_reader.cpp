@@ -120,8 +120,13 @@ bool parse_stations_line(string line, double &lng, double &lat)
 
 vector<GeoPoint> load_stations()
 {
+    return load_stations(stations_fname);
+}
+
+vector<GeoPoint> load_stations(string fname)
+{
     vector<GeoPoint> gps;
-    ifstream file(stations_fname);
+    ifstream file(fname);
 
     string line;
     for (int i = 0; getline(file, line); i++)
