@@ -64,19 +64,15 @@ TEST(PlannerTest, InitialTest)
     cout << sol << endl;
 }
 
-TEST(PlannerTest, RebalancerTest)
+void get_test_data(Rebalancer rebalancer, vector<GeoPoint> &idle,
+        vector<GeoPoint> &enroute, vector<int> &enroute_free_seats,
+        vector<PickupEvent> &events)
 {
-    RebalancerParams params;
-    Rebalancer rebalancer(params);
-
-    // using the pickup events as idle vehicle data as an example
-    string nyc_data_fname = "data/nyc_taxi_data.csv";
     int rows = 100;
+    string nyc_data_fname = "data/nyc_taxi_data.csv";
     vector<GeoPoint> regions = rebalancer.get_regions();
-    vector<PickupEvent> events = parse_historical_data(
-            nyc_data_fname, regions, rows);
-    vector<GeoPoint> idle, enroute;
-    vector<int> enroute_free_seats;
+    events = parse_historical_data(nyc_data_fname, regions, rows);
+
     for (int i = 0; i < events.size() / 2; i++)
     {
         idle.push_back(events[i].pickup);
@@ -87,6 +83,19 @@ TEST(PlannerTest, RebalancerTest)
         enroute.push_back(events[i].pickup);
         enroute_free_seats.push_back(7);
     }
+}
+
+TEST(PlannerTest, RebalancerTest)
+{
+    RebalancerParams params;
+    Rebalancer rebalancer(params);
+
+    // using the pickup events as idle vehicle data as an example
+    vector<PickupEvent> events;
+    vector<GeoPoint> idle, enroute;
+    vector<int> enroute_free_seats;
+    get_test_data(rebalancer, idle, enroute,
+            enroute_free_seats, events);
 
     rebalancer.update_rates(events, 10);
     RebalancingSolution sol = rebalancer.rebalance(idle, enroute,
