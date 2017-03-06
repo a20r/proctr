@@ -17,7 +17,7 @@ using namespace boost::filesystem;
 using namespace std;
 using namespace nanoflann;
 
-const string data_fname = "data/nyc_taxi_data.csv";
+const string data_fname = "/home/wallar/fast_data/nyc_taxi_data.csv";
 const string stations_fname = "data/stations.csv";
 const string ts_dir = "data/ts/";
 const int num_rows = 165114362;
