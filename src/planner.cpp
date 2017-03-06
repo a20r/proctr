@@ -9,6 +9,10 @@
 #include "proctr/data_reader.hpp"
 #include "proctr/planner.hpp"
 
+Planner::Planner()
+{
+}
+
 Planner::Planner(vector<GeoPoint> regions, int cap, RateFilter *rate_filters,
         WeightedGraph<GeoPoint, GeoPointHash> graph) :
     regions(regions),
@@ -18,11 +22,12 @@ Planner::Planner(vector<GeoPoint> regions, int cap, RateFilter *rate_filters,
     graph(graph),
     env(new GRBEnv)
 {
+    region_ids = get_all_nearest(graph.get_nodes(), regions);
 }
 
 Planner::~Planner()
 {
-    delete env;
+    // delete env;
 }
 
 void Planner::update_rates(vector<PickupEvent> &events, int secs)
@@ -59,13 +64,13 @@ void Planner::update_rates(vector<PickupEvent> &events, int secs)
     }
 }
 
-vector<size_t> Planner::get_all_nearest(kd_tree_t *index,
+vector<size_t> Planner::get_all_nearest(vector<GeoPoint> refs,
         vector<GeoPoint> locs)
 {
     vector<size_t> nearest;
     for (auto loc : locs)
     {
-        size_t near = get_nearest(index, loc.lng, loc.lat);
+        size_t near = get_nearest(refs, loc);
         nearest.push_back(near);
     }
     return nearest;
@@ -75,13 +80,22 @@ double Planner::graph_distance(GeoPoint src, GeoPoint sink)
 {
     int src_node = get_nearest(graph.get_nodes(), src);
     int sink_node = get_nearest(graph.get_nodes(), sink);
-    cout << src_node << ", " << sink_node << endl;
     return graph.shortest_dist(src_node, sink_node);
 }
 
 MatrixXd Planner::get_costs(vector<GeoPoint> locs)
 {
-    // Write this shit mate!
+    MatrixXd costs = MatrixXd::Zero(locs.size(), n_stations);
+    for (int i = 0; i < locs.size(); i++)
+    {
+        for (int j = 0; j < n_stations; j++)
+        {
+            costs(i, j) = graph_distance(locs[i],
+                    graph.get_node(region_ids[j]));
+        }
+    }
+
+    return costs;
 }
 
 VectorXd Planner::get_rates(int Nr)
@@ -96,10 +110,78 @@ VectorXd Planner::get_rates(int Nr)
     return rates;
 }
 
-vector<int> Planner::rebalance(vector<GeoPoint> locs)
+double Planner::max_region_time_heuristic(int Nv, int Nr,
+        MatrixXd costs, VectorXd rates, VectorXi enroute_seats)
 {
-    int Nv = locs.size();
+    vector<int> n_vecs(Nr, 0);
+    for (int v = 0; v < Nv; v++)
+    {
+        double min_cost = 0;
+        int min_cost_region = 0;
+        for (int r = 0; r < Nr; r++)
+        {
+            double cost = costs(v, r);
+            if (r == 0 or cost < min_cost)
+            {
+                min_cost = cost;
+                min_cost_region = r;
+            }
+        }
+
+        n_vecs[min_cost_region]++;
+    }
+
+    double max_region_time = 0;
+    for (int r = 0; r < Nr; r++)
+    {
+        double region_time = (enroute_seats[r] + cap * n_vecs[r]) / rates[r];
+        if (region_time > max_region_time and rates[r] > 0)
+        {
+            max_region_time = region_time;
+        }
+    }
+
+    return max_region_time;
+}
+
+VectorXi Planner::get_enroute_seats(vector<GeoPoint> enroute,
+        vector<int> enroute_free_seats, int Nr)
+{
+    VectorXi enroute_seats = VectorXi::Zero(Nr);
+    for (int i = 0; i < enroute.size(); i++)
+    {
+        int en_id = get_nearest(regions, enroute[i]);
+        enroute_seats[en_id] = enroute_seats[en_id] + enroute_free_seats[i];
+    }
+    return enroute_seats;
+}
+
+RebalancingSolution Planner::rebalance(vector<GeoPoint> idle,
+        vector<GeoPoint> enroute, vector<int> enroute_free_seats)
+{
+    int Nv = idle.size();
     int Nr = n_stations;
+    MatrixXd costs = get_costs(idle);
     VectorXd rates = get_rates(Nr);
-    VectorXd caps = VectorXd::Constant(cap, Nv);
+    VectorXi caps = VectorXi::Constant(Nv, cap);
+    VectorXi enroute_seats = get_enroute_seats(enroute,
+            enroute_free_seats, Nr);
+    double max_region_time = max_region_time_heuristic(Nv, Nr, costs, rates,
+            enroute_seats);
+    vector<int> assignments;
+    unordered_map<int, double> durs;
+    RebalancingModel model = create_model(
+            env, costs, rates, caps,
+            enroute_seats,
+            max_region_time, Nv, Nr);
+    model.solve(assignments, durs);
+    vector<GeoPoint> assignment_locs(Nv);
+    for (int i = 0; i < Nv; i++)
+    {
+        assignment_locs[i] = regions[assignments[i]];
+    }
+    RebalancingSolution sol = {
+        costs, rates, caps, max_region_time,
+        assignments, assignment_locs, durs, Nv, Nr};
+    return sol;
 }

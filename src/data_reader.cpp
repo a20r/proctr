@@ -120,8 +120,13 @@ bool parse_stations_line(string line, double &lng, double &lat)
 
 vector<GeoPoint> load_stations()
 {
+    return load_stations(stations_fname);
+}
+
+vector<GeoPoint> load_stations(string fname)
+{
     vector<GeoPoint> gps;
-    ifstream file(stations_fname);
+    ifstream file(fname);
 
     string line;
     for (int i = 0; getline(file, line); i++)
@@ -268,7 +273,7 @@ void create_prior(vector<ptime>& times, Prior& prior)
     }
 }
 
-Prior **create_pairwise_priors(int n_stations)
+Prior **create_pairwise_priors(int n_stations, double perc)
 {
     Prior **priors = new Prior *[n_stations];
     for (int i = 0; i < n_stations; i++)

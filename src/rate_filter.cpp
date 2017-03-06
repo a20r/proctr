@@ -14,13 +14,13 @@ RateFilter::RateFilter()
 {
 }
 
-RateFilter::RateFilter(double max_rate, int n_rates,
-        double vol, double resample_thresh, Prior prior) :
+RateFilter::RateFilter(int n_rates, double resample_thresh, Prior *prior) :
     n_rates(n_rates),
-    vol(vol),
+    vol(prior->get_volatility()),
     resample_thresh(resample_thresh),
     probs(ArrayXd::Constant(n_rates, 1.0 / n_rates)),
-    rates(ArrayXd::LinSpaced(n_rates, max_rate / n_rates, max_rate)),
+    rates(ArrayXd::LinSpaced(n_rates, prior->get_max_rate() / n_rates,
+                prior->get_max_rate())),
     prior(prior)
 {
 }
@@ -36,8 +36,10 @@ void RateFilter::observe(int n_obs, ptime time, int secs)
 
     for (int i = 0; i < n_rates; i++)
     {
-        double prior_prob = prior.pdf(time, rates[i]);
-        probs[i] *= pdf(poisson(rates[i] * secs), n_obs) * prior_prob;
+        double rate = rates[i];
+        double prior_prob = prior->pdf(time, rate) + 1e-8;
+        double update_prob = pdf(poisson(rate * secs), n_obs) + 1e-8;
+        probs[i] *= update_prob * prior_prob;
     }
 
     normalize();
@@ -46,7 +48,11 @@ void RateFilter::observe(int n_obs, ptime time, int secs)
 
 void RateFilter::normalize()
 {
-    probs /= probs.sum();
+    double p_sum = probs.sum();
+    if (p_sum > 0)
+    {
+        probs /= p_sum;
+    }
 }
 
 void RateFilter::evolve(double secs)
@@ -107,4 +113,16 @@ double RateFilter::get_predicted_rate()
         pred_rate += rates[i] * probs[i];
     }
     return pred_rate;
+}
+
+RateFilter *create_rate_filters(int n_rates, double resample_thresh,
+        int n_filters, Prior *priors)
+{
+    RateFilter *rfs = new RateFilter[n_filters];
+    for (int i = 0; i < n_filters; i++)
+    {
+        rfs[i] = RateFilter(n_rates, resample_thresh, &priors[i]);
+    }
+
+    return rfs;
 }

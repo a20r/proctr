@@ -17,12 +17,11 @@ class RateFilter
         double vol;
         double resample_thresh;
         int n_rates;
-        Prior prior;
+        Prior *prior;
 
     public:
         RateFilter();
-        RateFilter(double max_rate, int n_rates, double vol,
-                double resample_thresh, Prior prior);
+        RateFilter(int n_rates, double resample_thresh, Prior *prior);
         ~RateFilter();
         void observe(int n_obs, ptime time, int secs);
         double get_probability(int i);
@@ -32,5 +31,8 @@ class RateFilter
         void resample();
         void evolve(double secs);
 };
+
+RateFilter *create_rate_filters(int n_rates, double resample_thresh,
+        int n_filters, Prior *priors);
 
 #endif

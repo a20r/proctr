@@ -2,6 +2,7 @@
 #define PROCTR_DATA_READER_HPP
 
 #include <nanoflann.hpp>
+#include <sstream>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "proctr/prior.hpp"
 
@@ -60,7 +61,7 @@ struct GeoPoint
 
 inline bool operator==(const GeoPoint &a, const GeoPoint &b)
 {
-    double eps = 0.0000000001;
+    double eps = 1e-8;
     return abs(a.lng - b.lng) < eps and abs(a.lat - b.lat) < eps;
 }
 
@@ -69,9 +70,9 @@ class GeoPointHash
     public:
         size_t operator() (const GeoPoint &gp) const
         {
-            const double lng_pos = gp.lng + 180;
-            const double lat_pos = gp.lat + 85;
-            return hash<double>()(360 * lng_pos + lat_pos);
+            stringstream ss;
+            ss << gp.lng << ", " << gp.lat;
+            return hash<string>()(ss.str());
         }
 };
 
@@ -182,6 +183,7 @@ void create_prior(vector<ptime>& times, Prior& prior);
 Prior **create_pairwise_priors(int n_stations);
 Prior *create_priors(int n_stations);
 vector<GeoPoint> load_stations();
+vector<GeoPoint> load_stations(string fname);
 vector<ptime> parse_ts_file(int p_st, int d_st);
 vector<ptime> parse_region_ts_files(int st, int n_stations);
 vector<PickupEvent> parse_historical_data(string fname,

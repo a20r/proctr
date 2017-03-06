@@ -182,6 +182,7 @@ ENV/
 
 data/
 !test/data/
+!data/nyc-graph/
 bin/
 third_party/
 # writeup/

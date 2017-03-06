@@ -30,5 +30,6 @@ RebalancingModel create_model(
         const MatrixXd& costs,
         const VectorXd& rates,
         const VectorXi& caps,
+        const VectorXi& enroute_caps,
         double max_region_time,
         int Nv, int Nr);

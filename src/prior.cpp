@@ -56,8 +56,11 @@ void Prior::add_data(ptime time, double rate)
 
     tm t = to_tm(time);
     double t_secs = total_seconds(time);
-    kdes[t.tm_wday].add_data(t_secs, rate);
-    rates.push_back(rate);
+    if (n_points[t.tm_wday] < 1000)
+    {
+        kdes[t.tm_wday].add_data(t_secs, rate);
+        n_points[t.tm_wday]++;
+    }
 }
 
 double Prior::get_volatility()
