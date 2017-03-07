@@ -18,11 +18,14 @@ RateFilter::RateFilter(int n_rates, double resample_thresh, Prior *prior) :
     n_rates(n_rates),
     vol(prior->get_volatility()),
     resample_thresh(resample_thresh),
-    probs(ArrayXd::Constant(n_rates, 1.0 / n_rates)),
-    rates(ArrayXd::LinSpaced(n_rates, prior->get_max_rate() / n_rates,
-                prior->get_max_rate())),
+    // probs(ArrayXd::Constant(n_rates, 1.0 / n_rates)),
+    // rates(ArrayXd::LinSpaced(n_rates, prior->get_max_rate() / n_rates,
+    //             prior->get_max_rate())),
     prior(prior)
 {
+    probs = VectorXd::Constant(n_rates, 1.0 / n_rates);
+    rates = VectorXd::LinSpaced(n_rates, prior->get_max_rate() / n_rates,
+                prior->get_max_rate());
 }
 
 RateFilter::~RateFilter()
@@ -38,6 +41,7 @@ void RateFilter::observe(int n_obs, ptime time, int secs)
     {
         double rate = rates[i];
         double prior_prob = prior->pdf(time, rate) + 1e-8;
+        // double prior_prob = 1.0;
         double update_prob = pdf(poisson(rate * secs), n_obs) + 1e-8;
         probs[i] *= update_prob * prior_prob;
     }
@@ -60,7 +64,7 @@ void RateFilter::evolve(double secs)
     double std = vol * sqrt(secs);
     normal brownian(0, std);
 
-    ArrayXd new_probs = ArrayXd::Constant(n_rates, 0);
+    VectorXd new_probs = VectorXd::Constant(n_rates, 0);
 
     for (int i = 0; i < n_rates; i++)
     {
@@ -88,8 +92,14 @@ void RateFilter::evolve(double secs)
 
 void RateFilter::resample()
 {
-    double n_eff = 1.0 / probs.square().sum();
-    if (n_eff < resample_thresh)
+    double square_sum = 0.0;
+
+    for (int i = 0; i < n_rates; i++)
+    {
+        square_sum += probs[i] * probs[i];
+    }
+
+    if (1.0 / square_sum < resample_thresh)
     {
         probs = VectorXd::Constant(n_rates, 1.0 / n_rates);
     }

@@ -58,12 +58,11 @@ struct RebalancerParams
     }
 };
 
-
 class Rebalancer
 {
     public:
         RebalancerParams params;
-
+        Rebalancer();
         Rebalancer(RebalancerParams params);
         void update_rates(vector<PickupEvent> events, int n_secs);
         RebalancingSolution rebalance(vector<GeoPoint> idle,

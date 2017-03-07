@@ -255,7 +255,6 @@ void KDE::add_data(double x, double y){
 }
 
 void KDE::add_data(vector<double>& x){
-
 	if(!data_matrix.size()){
 		for(size_t i = 0; i < x.size(); i++){
 			vector<double> tmp;

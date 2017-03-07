@@ -1,7 +1,7 @@
 
 #include "proctr/prior.hpp"
 
-Prior::Prior()
+Prior::Prior() : kdes(7), n_points(7, 0)
 {
 }
 

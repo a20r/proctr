@@ -2,6 +2,10 @@
 #include "proctr/graph_reader.hpp"
 #include "proctr/rebalancer.hpp"
 
+Rebalancer::Rebalancer()
+{
+}
+
 Rebalancer::Rebalancer(RebalancerParams params) : params(params)
 {
     graph = read_graph(

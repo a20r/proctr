@@ -68,8 +68,8 @@ void get_test_data(Rebalancer rebalancer, vector<GeoPoint> &idle,
         vector<GeoPoint> &enroute, vector<int> &enroute_free_seats,
         vector<PickupEvent> &events)
 {
-    int rows = 100;
-    string nyc_data_fname = "data/nyc_taxi_data.csv";
+    int rows = 200;
+    string nyc_data_fname = "/home/wallar/fast_data/nyc_taxi_data.csv";
     vector<GeoPoint> regions = rebalancer.get_regions();
     events = parse_historical_data(nyc_data_fname, regions, rows);
 
@@ -97,7 +97,7 @@ TEST(PlannerTest, RebalancerTest)
     get_test_data(rebalancer, idle, enroute,
             enroute_free_seats, events);
 
-    rebalancer.update_rates(events, 10);
+    rebalancer.update_rates(events, 40);
     RebalancingSolution sol = rebalancer.rebalance(idle, enroute,
             enroute_free_seats);
     cout << sol << endl;

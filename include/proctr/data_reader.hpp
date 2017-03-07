@@ -138,6 +138,36 @@ struct PickupEvent
     {
     }
 
+    void set_pickup(GeoPoint pickup)
+    {
+        this->pickup = pickup;
+    }
+
+    void set_dropoff(GeoPoint dropoff)
+    {
+        this->dropoff = dropoff;
+    }
+
+    void set_pickup_st(int st)
+    {
+        this->pickup_st = st;
+    }
+
+    void set_dropoff_st(int st)
+    {
+        this->dropoff_st = st;
+    }
+
+    void set_pickup_time(ptime pickup_time)
+    {
+        this->pickup_time = pickup_time;
+    }
+
+    void set_dropoff_time(ptime dropoff_time)
+    {
+        this->dropoff_time = dropoff_time;
+    }
+
     bool operator<(const PickupEvent& other) const
     {
         return pickup_time < other.pickup_time;

@@ -7,6 +7,7 @@
 #include "proctr/kde.hpp"
 
 using namespace boost::posix_time;
+using namespace std;
 
 class Prior
 {
@@ -18,8 +19,8 @@ class Prior
         int n_data = 0;
         double min_rate = numeric_limits<double>::max();
         double max_rate = 0;
-        KDE kdes[7];
-        int n_points[7];
+        vector<KDE> kdes;
+        vector<int> n_points;
 
     public:
         Prior();

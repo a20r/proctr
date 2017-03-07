@@ -18,8 +18,8 @@ using namespace std;
 using namespace nanoflann;
 
 const string data_fname = "/home/wallar/fast_data/nyc_taxi_data.csv";
-const string stations_fname = "data/stations.csv";
-const string ts_dir = "data/ts/";
+const string stations_fname = "/home/wallar/projects/proctr/data/stations.csv";
+const string ts_dir = "/home/wallar/projects/proctr/data/ts/";
 const int num_rows = 165114362;
 
 bool parse_data_line(string line, string &p_dt, string &d_dt,
@@ -300,6 +300,7 @@ Prior **create_pairwise_priors(int n_stations, double perc)
 
 Prior *create_priors(int n_stations)
 {
+    cout << "Creating priors..." << endl;
     Prior *priors = new Prior[n_stations];
     boost::progress_display show_progress(n_stations);
 

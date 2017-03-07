@@ -12,14 +12,15 @@ using namespace boost::posix_time;
 class RateFilter
 {
     private:
-        ArrayXd rates;
-        ArrayXd probs;
+        VectorXd rates;
+        VectorXd probs;
         double vol;
         double resample_thresh;
         int n_rates;
         Prior *prior;
 
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         RateFilter();
         RateFilter(int n_rates, double resample_thresh, Prior *prior);
         ~RateFilter();
