@@ -67,12 +67,13 @@ void Planner::update_rates(vector<PickupEvent> &events, int secs)
 vector<size_t> Planner::get_all_nearest(vector<GeoPoint> refs,
         vector<GeoPoint> locs)
 {
-    vector<size_t> nearest;
-    for (auto loc : locs)
+    vector<size_t> nearest(locs.size());
+
+    for (int i = 0; i < locs.size(); i++)
     {
-        size_t near = get_nearest(refs, loc);
-        nearest.push_back(near);
+        nearest[i] = get_nearest(refs, locs[i]);
     }
+
     return nearest;
 }
 
@@ -88,6 +89,7 @@ MatrixXd Planner::get_costs(vector<GeoPoint> locs)
     MatrixXd costs = MatrixXd::Zero(locs.size(), n_stations);
     for (int i = 0; i < locs.size(); i++)
     {
+        #pragma omp parallel for
         for (int j = 0; j < n_stations; j++)
         {
             costs(i, j) = graph_distance(locs[i],
@@ -114,6 +116,8 @@ double Planner::max_region_time_heuristic(int Nv, int Nr,
         MatrixXd costs, VectorXd rates, VectorXi enroute_seats)
 {
     vector<int> n_vecs(Nr, 0);
+
+    #pragma omp parallel for
     for (int v = 0; v < Nv; v++)
     {
         double min_cost = 0;
@@ -128,10 +132,12 @@ double Planner::max_region_time_heuristic(int Nv, int Nr,
             }
         }
 
+        #pragma omp critical
         n_vecs[min_cost_region]++;
     }
 
     double max_region_time = 0;
+    #pragma omp parallel for
     for (int r = 0; r < Nr; r++)
     {
         double region_time = (enroute_seats[r] + cap * n_vecs[r]) / rates[r];
@@ -161,21 +167,30 @@ RebalancingSolution Planner::rebalance(vector<GeoPoint> idle,
 {
     int Nv = idle.size();
     int Nr = n_stations;
+    cout << "gettings costs" << endl;
     MatrixXd costs = get_costs(idle);
+    cout << "getting rates" << endl;
     VectorXd rates = get_rates(Nr);
     VectorXi caps = VectorXi::Constant(Nv, cap);
+    cout << "enroute_seats" << endl;
     VectorXi enroute_seats = get_enroute_seats(enroute,
             enroute_free_seats, Nr);
+    cout << "max_region_time" << endl;
     double max_region_time = max_region_time_heuristic(Nv, Nr, costs, rates,
             enroute_seats);
     vector<int> assignments;
     unordered_map<int, double> durs;
+    cout << "creating model" << endl;
     RebalancingModel model = create_model(
             env, costs, rates, caps,
             enroute_seats,
             max_region_time, Nv, Nr);
+    cout << "solving" << endl;
     model.solve(assignments, durs);
+    cout << "done solving" << endl;
     vector<GeoPoint> assignment_locs(Nv);
+
+    #pragma omp parallel for
     for (int i = 0; i < Nv; i++)
     {
         assignment_locs[i] = regions[assignments[i]];

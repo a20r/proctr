@@ -29,6 +29,7 @@ bool RebalancingModel::solve(vector<int>& assignments,
         unordered_map<int, double>& durs)
 {
     assignments = vector<int>(Nv);
+    this->getEnv().set(GRB_DoubleParam_TimeLimit, 20);
     this->optimize();
 
     for (int v = 0; v < Nv; v++)
@@ -46,8 +47,7 @@ bool RebalancingModel::solve(vector<int>& assignments,
     return true;
 }
 
-
-RebalancingModel create_model(
+RebalancingModel create_model_miqp(
         GRBEnv *env,
         const MatrixXd& costs,
         const VectorXd& rates,
@@ -66,9 +66,10 @@ RebalancingModel create_model(
 
     RebalancingModel model(env, vs, times, Nv, Nr);
 
-    GRBVar minivar = model.addVar(0, costs.maxCoeff() + max_region_time, 1,
-            GRB_CONTINUOUS);
+    // GRBVar total_time = model.addVar(0, costs.maxCoeff() + max_region_time, 1,
+    //         GRB_CONTINUOUS);
 
+    // #pragma omp parallel for
     for (int v = 0; v < Nv; v++)
     {
         for (int r = 0; r < Nr; r++)
@@ -94,18 +95,83 @@ RebalancingModel create_model(
         model.addConstr(total_demand + enroute_caps(r) <= rates(r) * times[r]);
     }
 
+    GRBQuadExpr total_time_obj = 0;
     for (int v = 0; v < Nv; v++)
     {
         GRBLinExpr total_times_assigned = 0;
         for (int r = 0; r < Nr; r++)
         {
             total_times_assigned += vs[v][r];
-            GRBQuadExpr lhs = vs[v][r] * (times[r] + costs(v, r));
-            model.addQConstr(lhs <= minivar);
+            // GRBQuadExpr lhs = vs[v][r] * (times[r] + costs(v, r));
+            total_time_obj += vs[v][r] * (times[r] + costs(v, r));
+            // total_time_obj += vs[v][r] * costs(v, r);
+            // model.addQConstr(lhs <= total_time);
         }
         model.addConstr(total_times_assigned == 1);
     }
 
+    model.setObjective(total_time_obj, GRB_MINIMIZE);
+    model.update();
+
+    return model;
+}
+
+RebalancingModel create_model(
+        GRBEnv *env,
+        const MatrixXd& costs,
+        const VectorXd& rates,
+        const VectorXi& caps,
+        const VectorXi& enroute_caps,
+        double max_region_time,
+        int Nv, int Nr)
+{
+    double time_horizon = 60; // seconds
+
+    GRBVar **vs = new GRBVar *[Nv];
+    for (int i = 0; i < Nv; i++)
+    {
+        vs[i] = new GRBVar[Nr];
+    }
+
+    GRBVar *times = new GRBVar[Nr];
+
+    RebalancingModel model(env, vs, times, Nv, Nr);
+
+    for (int v = 0; v < Nv; v++)
+    {
+        for (int r = 0; r < Nr; r++)
+        {
+            vs[v][r] = model.addVar(0, 1, 0, GRB_BINARY);
+        }
+    }
+
+    model.update();
+
+    for (int r = 0; r < Nr; r++)
+    {
+        GRBLinExpr total_demand = 0;
+        for (int v = 0; v < Nv; v++)
+        {
+            total_demand += caps(v) * vs[v][r];
+        }
+        model.addConstr(total_demand + enroute_caps(r)
+                <= rates(r) * time_horizon);
+    }
+
+    GRBLinExpr total_reqs_obj = 0;
+    for (int v = 0; v < Nv; v++)
+    {
+        GRBLinExpr total_times_assigned = 0;
+        for (int r = 0; r < Nr; r++)
+        {
+            total_times_assigned += vs[v][r];
+            total_reqs_obj += vs[v][r] * (time_horizon - costs(v, r)
+                    * rates(r));
+        }
+        model.addConstr(total_times_assigned == 1);
+    }
+
+    model.setObjective(total_reqs_obj, GRB_MAXIMIZE);
     model.update();
 
     return model;

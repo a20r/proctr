@@ -156,13 +156,18 @@ size_t get_nearest(vector<GeoPoint> pts, GeoPoint pt)
 {
     double min_dist = pt.distance(pts[0]);
     int closest = 0;
+
+    // #pragma omp parallel for
     for (int i = 0; i < pts.size(); i++)
     {
         double dist = pt.distance(pts[i]);
         if (dist < min_dist)
         {
+            // #pragma omp critical
             min_dist = dist;
-            closest = i;;
+
+            // #pragma omp critical
+            closest = i;
         }
     }
 
